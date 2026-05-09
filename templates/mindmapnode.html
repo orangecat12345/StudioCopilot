@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudioCopilot Workspace</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 3D Assets and Interactions -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.51/build/spline-viewer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    
+    <!-- HTML to PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mindmapnode.css') }}">
+</head>
+<body>
+    <!-- Premium 3D Background -->
+    <div class="spline-bg-container">
+        <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"></spline-viewer>
+    </div>
+    <div class="glass-overlay"></div>
+
+    <div class="math-bg-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -3;">
+        <!-- Dynamic Gradient Background replacing math canvas for better aesthetics -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 1; pointer-events: none; overflow: hidden; background: #f8fafc;">
+            <!-- Animated Gradient Orbs (Light Theme) -->
+            <div style="position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(255,255,255,0) 60%); filter: blur(60px); animation: pulseFloat1 12s ease-in-out infinite alternate;"></div>
+            <div style="position: absolute; bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, rgba(255,255,255,0) 60%); filter: blur(80px); animation: pulseFloat2 15s ease-in-out infinite alternate-reverse;"></div>
+            <div style="position: absolute; top: 30%; left: 50%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(255,255,255,0) 60%); filter: blur(70px); animation: pulseFloat3 18s ease-in-out infinite alternate;"></div>
+            
+            <!-- Flowing Grid Pattern Overlay -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px); background-size: 50px 50px; transform: perspective(500px) rotateX(60deg) translateY(-100px) scale(3); transform-origin: top center; animation: gridMove 20s linear infinite;"></div>
+        </div>
+    </div>
+
+    <!-- Page Transition Overlay (Fade Out) -->
+    <div id="pageTransitionOverlay" class="page-transition-overlay active">
+        <div class="transition-logo">
+            <i class="fa-solid fa-brain-circuit"></i>
+        </div>
+        <div style="font-weight: 700; color: #1e1b4b; letter-spacing: 2px;">STUDIO COPILOT</div>
+    </div>
+
+    <div class="app-container" id="appContainer" style="position: relative; z-index: 1;">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="nav-left">
+                <a href="/" class="back-btn" title="返回首页">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="app-branding">
+                    <div class="logo-icon">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h1>StudioCopilot <span>Workspace</span></h1>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <button class="nav-btn primary-btn">
+                    <i class="fa-solid fa-plus"></i> 创建新节点
+                </button>
+                <button class="nav-icon-btn" title="分享">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
+                <button class="nav-icon-btn" title="设置">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button class="nav-icon-btn" title="应用">
+                    <i class="fa-solid fa-grip"></i>
+                </button>
+                <div class="user-avatar">
+                    <img src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" alt="User">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace-grid">
+            
+            <!-- Left Panel: Sources -->
+            <section class="panel source-panel" data-tilt data-tilt-max="2" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+                <div class="panel-header">
+                    <h2>知识来源</h2>
+                    <button class="icon-btn"><i class="fa-solid fa-book-bookmark"></i></button>
+                </div>
+                
+                <button class="add-source-btn" onclick="document.getElementById('fileUploadInput').click()">
+                    <i class="fa-solid fa-plus"></i> 添加来源
+                </button>
+                <input type="file" id="fileUploadInput" style="display: none;" accept=".pdf,.doc,.docx,.txt,.md,.ppt,.pptx">
+                
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="webSearchInput" placeholder="在网络中搜索新来源...">
+                    <button class="search-submit" id="webSearchBtn"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                
+                <div class="empty-state source-empty" id="sourceEmptyState">
+                    <div class="empty-icon">
+                        <i class="fa-regular fa-file-lines"></i>
+                    </div>
+                    <p>已保存的来源将显示在此处</p>
+                    <span>点击上方的"添加来源"即可添加 PDF、网站、文本、视频或音频文件。此外，您还可以直接从云端硬盘导入文件。</span>
+                </div>
+                <!-- Dynamic Sources List -->
+                <div class="sources-list" id="sourcesList" style="display: none; margin-top: 1.5rem; flex: 1; overflow-y: auto;"></div>
+            </section>
+
+            <!-- Middle Panel: Stage Stack -->
+            <section class="panel chat-panel" data-tilt data-tilt-max="1" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
+                <div class="panel-header" style="flex-direction: row; justify-content: space-between; align-items: center; padding: 0 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.03); min-height: 50px;">
+                    <!-- Stage Navigation Tabs -->
+                    <div class="stage-tabs" id="stageTabs" style="border-bottom: none; padding: 0; height: 100%; align-items: center; gap: 0.5rem; flex: 1; overflow-x: auto;">
+                        <div class="stage-tab active" data-target="chatStage" style="padding: 0.5rem 1rem;">智能对话</div>
+                    </div>
+                    
+                    <div class="header-actions" style="display: flex; gap: 0.5rem; flex-shrink: 0; margin-left: 1rem;">
+                        <button class="icon-btn" id="fullscreenBtn" title="全屏"><i class="fa-solid fa-expand"></i></button>
+                        <button class="icon-btn" id="closePreviewBtn" style="display: none;" title="关闭预览"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="icon-btn"><i class="fa-solid fa-thumbtack"></i></button>
+                        <button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                </div>
+                
+                <div class="stages-wrapper" id="stagesWrapper" style="display: flex; flex: 1; overflow: hidden; width: 100%; flex-direction: row;">
+                    <!-- Chat Stage (Default) -->
+                    <div id="chatStage" class="stage-container active">
+                        <div class="chat-content" id="chatContent">
+                        <div class="hero-empty-state" id="chatEmptyState">
+                            <div class="hero-icon-wrapper">
+                                <i class="fa-solid fa-cloud-arrow-up hero-icon"></i>
+                            </div>
+                            <h3>添加来源即可开始使用</h3>
+                            <button class="upload-btn" onclick="document.getElementById('fileUploadInput').click()">上传来源</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="chat-input-box">
+                            <input type="text" id="chatInput" placeholder="输入问题与 GLM-5 智能体对话...">
+                            <span class="source-count" id="chatSourceCount">0 个来源</span>
+                            <button class="send-btn" id="chatSendBtn">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="chat-footer-text">
+                            StudioCopilot 提供的内容未必准确，因此请仔细核查回答内容。
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Document Preview Stage -->
+                <div id="pdfPreviewStage" class="stage-container" style="display: none; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px); border-left: 1px solid rgba(255,255,255,0.5);">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.5); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.6); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 1.2rem;"></i>
+                            <h3 id="pdfPreviewTitle" style="font-size: 1.05rem; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;">文档预览</h3>
+                        </div>
+                    </div>
+                    <div style="flex: 1; display: flex; overflow: hidden;">
+                        <div class="markdown-body" id="previewMarkdown" style="display: none; flex: 1; overflow-y: auto; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin: 1.5rem; border: 1px solid rgba(255,255,255,0.8);"></div>
+                        <iframe id="previewIframe" style="display: none; width: 100%; height: 100%; border: none; background: #525659;"></iframe>
+                    </div>
+                </div>
+                
+                <!-- Mind Map Stage -->
+                <div id="mindmapStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color);">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.5); min-height: 60px;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.25rem;">思维导图工作室</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">基于您上传的知识来源自动生成结构化导图</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="splitViewBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer; background: var(--text-main); color: white;">
+                                <i class="fa-solid fa-columns"></i> 开启并排PDF
+                            </button>
+                            <button id="regenerateMindmapBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer;">
+                                <i class="fa-solid fa-rotate-right"></i> 重新生成
+                            </button>
+                            <button id="exportMindmapBtn" class="upload-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; display: none;">
+                                <i class="fa-solid fa-download"></i> 导出图片
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; display: flex; overflow: hidden;">
+                        <!-- ECharts Container -->
+                        <div id="mindmapCanvas" style="flex: 1; height: 100%; position: relative;">
+                            <div id="mindmapLoader" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; color: var(--primary);">
+                                <i class="fa-solid fa-circle-notch fa-spin fa-2xl" style="margin-bottom: 1rem;"></i>
+                                <p>AI 正在绘制思维导图...</p>
+                            </div>
+                            <div id="echartsMain" style="width: 100%; height: 100%;"></div>
+                        </div>
+                        
+                        <!-- Node Details Panel -->
+                        <div id="nodeDetailsPanel" style="width: 300px; border-left: 1px solid var(--border-color); background: rgba(248, 250, 252, 0.9); display: none; flex-direction: column;">
+                            <div style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                                <h4 style="font-size: 0.95rem; font-weight: 600;">节点详情</h4>
+                                <button class="icon-btn" onclick="document.getElementById('nodeDetailsPanel').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div style="padding: 1rem; overflow-y: auto; flex: 1;">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">关键词</span>
+                                    <div id="nodeKeyword" style="font-weight: 600; color: var(--primary); margin-top: 0.25rem; font-size: 1.1rem;"></div>
+                                </div>
+                                
+                                <div style="margin-bottom: 1.5rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">来源文本摘录</span>
+                                    <div id="nodeSourceText" style="margin-top: 0.5rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-main); background: white; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+                                    <button id="locatePdfBtn" class="primary-btn" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; border-radius: 8px; border: none; font-size: 0.85rem; cursor: pointer; display: none;">
+                                        <i class="fa-solid fa-location-crosshairs"></i> 在预览中定位
+                                    </button>
+                                </div>
+                                
+                                <div>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">相关网络链接</span>
+                                    <div id="nodeWebLinks" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                        <!-- Links will be populated here -->
+                                    </div>
+                                    <div id="nodeLinksLoader" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; display: none; padding: 1rem 0;">
+                                        <i class="fa-solid fa-spinner fa-spin"></i> 正在搜索相关信息...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Report Stage -->
+                <div id="reportStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-file-contract" style="color: var(--primary); font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">研究报告</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">基于文档动态生成的 HTML 长文</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="regenerateReportBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer;">
+                                <i class="fa-solid fa-rotate-right"></i> 重新生成
+                            </button>
+                            <button id="exportReportPdfBtn" class="upload-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; display: none;">
+                                <i class="fa-solid fa-file-pdf"></i> 导出 PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; padding: 0; display: flex; justify-content: center; background: white; width: 100%;">
+                        <div id="reportContent" style="width: 100%; max-width: 1000px; background: white; min-height: 100%; color: var(--text-main); line-height: 1.8; padding: 3rem 4rem; margin: 0 auto;">
+                            <div id="reportLoader" style="text-align: center; color: var(--primary); padding: 3rem 0; display: none;">
+                                <i class="fa-solid fa-circle-notch fa-spin fa-2xl" style="margin-bottom: 1rem;"></i>
+                                <p>AI 正在撰写研究报告，请稍候...</p>
+                            </div>
+                            <div id="reportHtmlContainer"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container" style="background: white; border-top: 1px solid var(--border-color); padding: 1.5rem; transform: none; box-shadow: 0 -4px 15px rgba(0,0,0,0.02);">
+                        <div class="chat-input-box" style="box-shadow: none; border: 1px solid var(--border-color); background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;">
+                            <input type="text" id="reportInput" placeholder="让 AI 继续补充内容或自由钻研任意概念，例如：请解释一下多模态..." style="flex: 1; border: none; background: transparent; outline: none; font-size: 1rem;">
+                            <button class="send-btn" id="reportSendBtn" style="background: var(--primary); color: white; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Concept Explain Stage -->
+                <div id="conceptStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-lightbulb" style="color: #eab308; font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">概念解析</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">AI 深度科普</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="backToReportBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer; background: var(--text-main); color: white;">
+                                <i class="fa-solid fa-arrow-left"></i> 返回报告
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; padding: 0; display: flex; justify-content: center; background: #f8fafc; width: 100%;">
+                        <div id="conceptContent" style="width: 100%; max-width: 900px; background: white; min-height: 100%; color: var(--text-main); line-height: 1.8; padding: 3rem 4rem; margin: 0 auto; box-shadow: var(--shadow-sm);">
+                            <div id="conceptLoader" style="text-align: center; color: var(--primary); padding: 3rem 0; display: none;">
+                                <i class="fa-solid fa-circle-notch fa-spin fa-2xl" style="margin-bottom: 1rem;"></i>
+                                <p>AI 正在为你生成专属科普卡片，请稍候...</p>
+                            </div>
+                            <div id="conceptHtmlContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Textbook Stage -->
+                <div id="textbookStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: #fdfbf7; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-book-open-reader" style="color: #e8864a; font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">AI 沉浸式课本</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">BOPPPS 教学模型结构化生成</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="regenerateTextbookBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer;">
+                                <i class="fa-solid fa-sliders"></i> 生成/配置
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="textbookConfigModal" class="mn-modal" style="display: none;">
+                        <div class="mn-modal-content">
+                            <div class="mn-modal-header">
+                                <div class="mn-modal-title">
+                                    <i class="fa-solid fa-sliders"></i>
+                                    <span>AI 课本生成配置</span>
+                                </div>
+                                <button class="mn-modal-close" id="closeTextbookConfigBtn"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div class="mn-modal-body">
+                                <div class="mn-form-row">
+                                    <label class="mn-label">讲解风格</label>
+                                    <select id="tbStyle" class="mn-select">
+                                        <option value="balanced" selected>平衡（清晰 + 深度）</option>
+                                        <option value="exam">备考导向（考点 + 易错点）</option>
+                                        <option value="story">故事化（类比 + 场景）</option>
+                                        <option value="academic">学术严谨（定义 + 推导）</option>
+                                    </select>
+                                </div>
+                                <div class="mn-form-row">
+                                    <label class="mn-label">难度</label>
+                                    <select id="tbDifficulty" class="mn-select">
+                                        <option value="easy">入门</option>
+                                        <option value="medium" selected>进阶</option>
+                                        <option value="hard">困难</option>
+                                    </select>
+                                </div>
+                                <div class="mn-form-row">
+                                    <label class="mn-label">图片来源</label>
+                                    <select id="tbImageMode" class="mn-select">
+                                        <option value="auto" selected>自动（示意图JS + 百科图 + AI兜底）</option>
+                                        <option value="none">不生成图片</option>
+                                        <option value="wiki">优先百科图（Wikipedia）</option>
+                                        <option value="ai">仅 AI 生图</option>
+                                    </select>
+                                </div>
+                                <div class="mn-form-row mn-inline">
+                                    <label class="mn-checkbox">
+                                        <input type="checkbox" id="tbStreamChapters" checked>
+                                        <span>章节生成后立即显示</span>
+                                    </label>
+                                </div>
+                                <div class="mn-form-row">
+                                    <label class="mn-label">其他要求（可选）</label>
+                                    <textarea id="tbExtra" class="mn-textarea" rows="3" placeholder="例如：多用生活类比、每章最后给 3 条自测问题..."></textarea>
+                                </div>
+                            </div>
+                            <div class="mn-modal-footer">
+                                <button class="secondary-btn" id="cancelTextbookConfigBtn">取消</button>
+                                <button class="primary-btn" id="startTextbookGenerationBtn"><i class="fa-solid fa-play"></i> 开始生成</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; display: flex; overflow: hidden; position: relative;">
+                        <div id="textbookLoader" class="mn-progress-panel" style="display: none;"></div>
+
+                        <!-- Left Chapter Index -->
+                        <div style="width: 280px; border-right: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.6); padding: 1.5rem; overflow-y: auto;">
+                            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 1rem;">课程目录 (BOPPPS)</h4>
+                            <div id="textbookToc" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <!-- Table of contents will be injected here -->
+                                <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-top: 2rem; font-style: italic;">尚未生成</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Main Content -->
+                        <div style="flex: 1; overflow-y: auto; padding: 3rem 4rem; scroll-behavior: smooth;" id="textbookScrollArea">
+                            <div id="textbookContent" style="max-width: 800px; margin: 0 auto;">
+                                <!-- Content sections will be injected here -->
+                                <div style="text-align: center; margin-top: 20vh; opacity: 0.5;">
+                                    <i class="fa-solid fa-book-open" style="font-size: 4rem; margin-bottom: 1rem; color: var(--text-muted);"></i>
+                                    <p style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 1rem;">点击下方按钮配置并开始生成您的专属课本</p>
+                                    <button id="openTextbookConfigBtn" class="primary-btn" style="padding: 0.8rem 1.2rem; border-radius: 12px; border: none; cursor: pointer;">
+                                        <i class="fa-solid fa-play"></i> 开始生成
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flashcard Stage -->
+                <div id="flashcardStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-clone" style="color: var(--primary); font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">记忆闪卡工坊</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">AI 智能生成交互式学习卡片</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="newFlashcardBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer; display: none;">
+                                <i class="fa-solid fa-plus"></i> 新建闪卡集
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; align-items: center; background: #f8fafc; width: 100%;">
+                        
+                        <!-- Configuration Form -->
+                        <div id="flashcardConfigForm" style="width: 100%; max-width: 600px; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-md); margin-top: 2rem; border: 1px solid var(--border-color);">
+                            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-main); font-weight: 800;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> 配置您的专属闪卡</h2>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">生成数量</label>
+                                <input type="number" id="fcCount" min="1" max="20" value="5" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                            </div>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">难度级别</label>
+                                <select id="fcDifficulty" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                    <option value="easy">入门 (基础概念与定义)</option>
+                                    <option value="medium" selected>进阶 (原理解析与应用)</option>
+                                    <option value="hard">困难 (深度思考与辨析)</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">其他特殊要求 (可选)</label>
+                                <textarea id="fcExtra" rows="3" placeholder="例如：侧重于数学公式解释、多使用生活中的比喻..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; resize: vertical;"></textarea>
+                            </div>
+                            
+                            <button id="generateFlashcardsBtn" class="primary-btn" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 700; border: none; cursor: pointer; background: linear-gradient(135deg, var(--primary), #818cf8); color: white; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); transition: all 0.3s ease;">
+                                <i class="fa-solid fa-bolt"></i> 立即生成闪卡
+                            </button>
+                        </div>
+
+                        <!-- Loader -->
+                        <div id="flashcardLoader" style="text-align: center; color: var(--primary); padding: 5rem 0; display: none;">
+                            <div class="cube-loader"></div>
+                            <p style="margin-top: 2rem; font-weight: 600; font-size: 1.1rem;">AI 正在为您提炼记忆节点...</p>
+                        </div>
+
+                        <!-- Flashcard Display Area -->
+                        <div id="flashcardDisplayArea" style="width: 100%; max-width: 800px; display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem 0;">
+                            <!-- Progress Bar -->
+                            <div style="width: 100%; display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                                <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                                    <div id="fcProgressFill" style="height: 100%; width: 0%; background: var(--primary); transition: width 0.3s ease;"></div>
+                                </div>
+                                <span id="fcProgressText" style="font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums;">1 / 5</span>
+                            </div>
+
+                            <!-- The Card -->
+                            <div class="flip-card-container">
+                                <div class="flip-card" id="currentFlashcard">
+                                    <div class="flip-card-front">
+                                        <div class="fc-badge">Q</div>
+                                        <div class="fc-content" id="fcFrontContent">什么是多模态大模型？</div>
+                                        <div class="fc-hint"><i class="fa-solid fa-hand-pointer fa-bounce"></i> 点击卡片翻转查看答案</div>
+                                    </div>
+                                    <div class="flip-card-back">
+                                        <div class="fc-badge answer">A</div>
+                                        <div class="fc-content fc-answer" id="fcBackContent">详细答案内容...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Controls -->
+                            <div style="display: flex; gap: 1.5rem; margin-top: 3rem;">
+                                <button class="fc-control-btn" id="fcPrevBtn" disabled><i class="fa-solid fa-chevron-left"></i> 上一张</button>
+                                <button class="fc-control-btn primary" id="fcNextBtn">下一张 <i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Quiz Stage -->
+                <div id="quizStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-clipboard-question" style="color: var(--primary); font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">随堂测验</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">AI 智能生成试题与解析</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="newQuizBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer; display: none;">
+                                <i class="fa-solid fa-plus"></i> 新建测验
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; align-items: center; background: #f8fafc; width: 100%;">
+                        
+                        <!-- Quiz Configuration Form -->
+                        <div id="quizConfigForm" style="width: 100%; max-width: 600px; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-md); margin-top: 2rem; border: 1px solid var(--border-color);">
+                            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-main); font-weight: 800;"><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> 配置随堂测验</h2>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">单选题数量</label>
+                                    <input type="number" id="quizSingleCount" min="0" max="10" value="2" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">多选题数量</label>
+                                    <input type="number" id="quizMultiCount" min="0" max="10" value="1" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">填空题数量</label>
+                                    <input type="number" id="quizFillCount" min="0" max="10" value="1" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">大题(简答题)数量</label>
+                                    <input type="number" id="quizEssayCount" min="0" max="5" value="1" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 2rem; display: none;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">测验模式</label>
+                                <select id="quizMode" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                    <option value="batch" selected>统一交卷模式 (全部做完后统一判定打分)</option>
+                                </select>
+                            </div>
+                            
+                            <button id="generateQuizBtn" class="primary-btn" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 700; border: none; cursor: pointer; background: linear-gradient(135deg, var(--primary), #818cf8); color: white; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); transition: all 0.3s ease;">
+                                <i class="fa-solid fa-pen-nib"></i> 生成测验
+                            </button>
+                        </div>
+
+                        <!-- Quiz Loader -->
+                        <div id="quizLoader" style="text-align: center; color: var(--primary); padding: 5rem 0; display: none;">
+                            <div class="cube-loader"></div>
+                            <p style="margin-top: 2rem; font-weight: 600; font-size: 1.1rem;">AI 正在为您组卷出题...</p>
+                        </div>
+
+                        <!-- Quiz Display Area -->
+                        <div id="quizDisplayArea" style="width: 100%; max-width: 900px; display: none; flex-direction: column; padding-bottom: 4rem;">
+                            
+                            <div id="quizHeader" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: white; padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                                <div>
+                                    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">随堂测验卷</h2>
+                                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;" id="quizMetaInfo">总分: 100分</p>
+                                </div>
+                                <div id="quizScoreDisplay" style="display: none; text-align: right;">
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">最终得分</div>
+                                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); line-height: 1;" id="quizScoreValue">85</div>
+                                </div>
+                            </div>
+
+                            <div id="quizQuestionsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <!-- Questions will be injected here -->
+                            </div>
+
+                            <div id="quizFooterActions" style="margin-top: 2rem; display: flex; justify-content: center; gap: 1rem;">
+                                <button id="quizSubmitBtn" class="primary-btn" style="padding: 0.75rem 2.5rem; border-radius: 999px; font-size: 1.05rem; font-weight: 600; display: none;">
+                                    <i class="fa-solid fa-check-double"></i> 提交试卷
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Discussion Stage -->
+                <div id="discussionStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-users" style="color: var(--primary); font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">小组讨论</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">与多个AI同学一起探讨知识</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="newDiscussionBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer; display: none;">
+                                <i class="fa-solid fa-power-off"></i> 结束讨论
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; background: #f8fafc; width: 100%; position: relative;">
+                        
+                        <!-- Configuration Form -->
+                        <div id="discussionConfigForm" style="width: 100%; max-width: 600px; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-md); margin: 2rem auto; border: 1px solid var(--border-color);">
+                            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-main); font-weight: 800;"><i class="fa-solid fa-user-group" style="color: var(--primary);"></i> 创建讨论小组</h2>
+                            
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">邀请几位AI同学？</label>
+                                <select id="discussionCount" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                    <option value="2">2位同学 (适合轻度交流)</option>
+                                    <option value="3" selected>3位同学 (推荐，讨论更丰富)</option>
+                                    <option value="4">4位同学 (头脑风暴)</option>
+                                </select>
+                            </div>
+                            
+                            <button id="initDiscussionBtn" class="primary-btn" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 700; border: none; cursor: pointer; background: linear-gradient(135deg, var(--primary), #818cf8); color: white; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); transition: all 0.3s ease;">
+                                <i class="fa-solid fa-magic"></i> 生成AI同学并开始
+                            </button>
+                        </div>
+
+                        <!-- Loader -->
+                        <div id="discussionLoader" style="text-align: center; color: var(--primary); padding: 5rem 0; display: none;">
+                            <div class="cube-loader"></div>
+                            <p style="margin-top: 2rem; font-weight: 600; font-size: 1.1rem;">AI 正在召唤同学并生成头像，请稍候...</p>
+                        </div>
+
+                        <!-- Chat Area -->
+                        <div id="discussionChatArea" style="display: none; flex-direction: column; height: 100%;">
+                            <div class="discussion-agent-list" id="discussionAgentList">
+                                <!-- Agents will be listed here -->
+                            </div>
+                            
+                            <div class="discussion-messages" id="discussionMessages" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                                <!-- Chat messages -->
+                            </div>
+                            
+                            <div class="chat-input-container" style="background: white; border-top: 1px solid var(--border-color); padding: 1.5rem; transform: none; box-shadow: 0 -4px 15px rgba(0,0,0,0.02); z-index: 10;">
+                                <div class="chat-input-box" style="box-shadow: none; border: 1px solid var(--border-color); background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;">
+                                    <input type="text" id="discussionInput" placeholder="参与讨论..." style="flex: 1; border: none; background: transparent; outline: none; font-size: 1rem;">
+                                    <button class="send-btn" id="discussionSendBtn" style="background: var(--primary); color: white; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                </div> <!-- End stages-wrapper -->
+
+                <!-- Classroom Stage -->
+                <div id="classroomStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column; width: 100%; min-width: 100%;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.8); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-person-chalkboard" style="color: var(--primary); font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">模拟课堂</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">沉浸式 AI 授课与互动讲解</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="newClassroomBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; border: none; cursor: pointer; display: none;">
+                                <i class="fa-solid fa-power-off"></i> 结束课程
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; background: #f8fafc; width: 100%; position: relative;">
+                        
+                        <!-- Configuration Form -->
+                        <div id="classroomConfigForm" style="width: 100%; max-width: 600px; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-md); margin: 2rem auto; border: 1px solid var(--border-color);">
+                            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-main); font-weight: 800;"><i class="fa-solid fa-chalkboard" style="color: var(--primary);"></i> 准备您的模拟课堂</h2>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">课程重点与主题</label>
+                                <input type="text" id="classTopic" placeholder="例如：深入解析多模态大模型的底层架构..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                            </div>
+                            
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">授课风格</label>
+                                <select id="classStyle" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                    <option value="professional" selected>严谨专业 (适合深度学习)</option>
+                                    <option value="humorous">幽默风趣 (适合轻松科普)</option>
+                                    <option value="storytelling">故事化叙述 (适合概念引入)</option>
+                                </select>
+                            </div>
+                            
+                            <button id="generateClassBtn" class="primary-btn" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 700; border: none; cursor: pointer; background: linear-gradient(135deg, var(--primary), #818cf8); color: white; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); transition: all 0.3s ease;">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 备课并开始上课
+                            </button>
+                        </div>
+
+                        <!-- Loader -->
+                        <div id="classroomLoader" style="text-align: center; color: var(--primary); padding: 5rem 0; display: none;">
+                            <div class="cube-loader"></div>
+                            <p style="margin-top: 2rem; font-weight: 600; font-size: 1.1rem;">AI 老师正在备课并生成课件，请稍候...</p>
+                        </div>
+
+                        <!-- Presentation Area -->
+                        <div id="classroomDisplayArea" style="display: none; flex-direction: column; height: 100%; padding: 1.5rem; gap: 1.5rem; align-items: center;">
+                            <!-- Progress/Pages -->
+                            <div style="width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center;">
+                                <span id="classProgressText" style="font-weight: 700; color: var(--primary);">第 1 / 5 页</span>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="icon-btn" id="classPrevBtn" disabled style="background: white; border: 1px solid var(--border-color);"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <button class="icon-btn" id="classPlayPauseBtn" style="background: var(--primary); color: white; border: none;"><i class="fa-solid fa-pause"></i></button>
+                                    <button class="icon-btn" id="classNextBtn" style="background: white; border: 1px solid var(--border-color);"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                            <!-- PPT Slide View -->
+                            <div class="ppt-slide-container" id="pptSlideContainer">
+                                <button class="icon-btn ppt-fullscreen-btn" id="pptFullscreenBtn" title="全屏演示" style="position: absolute; top: 1rem; right: 1rem; z-index: 10; background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);"><i class="fa-solid fa-expand"></i></button>
+                                <div class="ppt-slide-content markdown-body" id="pptSlideContent">
+                                    <!-- HTML PPT Content injected here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Teacher's Voice / Subtitles -->
+                            <div class="teacher-voice-panel" style="width: 100%; max-width: 900px; background: white; border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; gap: 1.5rem; align-items: flex-start;">
+                                <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #818cf8); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(79,70,229,0.3);">
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary); font-size: 0.9rem;">AI 老师讲解</h4>
+                                    <p id="teacherSubtitle" style="margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--text-main); font-weight: 500;">
+                                        加载中...
+                                    </p>
+                                </div>
+                                <div id="audioVisualizer" style="display: flex; gap: 3px; align-items: center; height: 30px;">
+                                    <!-- Animated bars -->
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden Audio Player -->
+                            <audio id="classAudioPlayer" style="display: none;"></audio>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Infinity City Stage -->
+                <div id="infinityCityStage" class="stage-container" style="display: none; border-left: 1px solid var(--border-color); background: white; flex-direction: column; width: 100%; min-width: 100%;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.82); min-height: 60px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-city" style="color: #7c3aed; font-size: 1.2rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.05rem; color: var(--text-main); margin: 0;">无限城</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">点击知识世界的任意位置，递归深入到下一层细节</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="icResetBtn" class="secondary-btn" style="padding: 0.5rem 1rem; border-radius: 8px; display: none;">
+                                <i class="fa-solid fa-rotate-left"></i> 重新开始
+                            </button>
+                            <button id="icOpenConfigBtn" class="primary-btn" style="padding: 0.5rem 1rem; border-radius: 8px;">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 生成世界
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; background: #f8fafc; width: 100%; position: relative;">
+                        <div id="infinityCityConfigForm" style="width: 100%; max-width: 680px; background: white; padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-md); margin: 2rem auto; border: 1px solid var(--border-color);">
+                            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-main); font-weight: 800;">
+                                <i class="fa-solid fa-location-crosshairs" style="color: #7c3aed;"></i> 构建你的无限城
+                            </h2>
+
+                            <div style="margin-bottom: 1.25rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">主题 / 焦点</label>
+                                <input type="text" id="icTopic" placeholder="例如：细胞、工业革命、神经网络、操作系统..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem;">
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">场景隐喻</label>
+                                    <select id="icMetaphor" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                        <option value="auto" selected>自动选择</option>
+                                        <option value="city">知识城市</option>
+                                        <option value="castle">知识城堡</option>
+                                        <option value="map">探索地图</option>
+                                        <option value="forest">知识森林</option>
+                                        <option value="micro">微观内部结构</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">视觉风格</label>
+                                    <select id="icVisualStyle" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                        <option value="cinematic" selected>电影感</option>
+                                        <option value="scientific">科学结构感</option>
+                                        <option value="fantasy">奇幻史诗感</option>
+                                        <option value="blueprint">蓝图剖析感</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">输出尺寸</label>
+                                    <select id="icSize" style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; background: white; cursor: pointer;">
+                                        <option value="1024x1024">1024 x 1024</option>
+                                        <option value="1280x1280" selected>1280 x 1280</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">交互提示</label>
+                                    <div style="width: 100%; padding: 0.85rem 1rem; border-radius: 12px; border: 1px dashed var(--border-color); background: #faf5ff; color: #6b21a8; font-size: 0.92rem;">
+                                        全屏后点击任意位置，生成该处的下一层细节图
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 1.75rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">其他要求（可选）</label>
+                                <textarea id="icExtra" rows="3" placeholder="例如：强调内部结构、不要拟人化、整体偏蓝图风格..." style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); outline: none; font-size: 1rem; resize: vertical;"></textarea>
+                            </div>
+
+                            <button id="icGenerateBtn" class="primary-btn" style="width: 100%; padding: 1rem; border-radius: 12px; font-size: 1.05rem; font-weight: 700; border: none; cursor: pointer; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; box-shadow: 0 10px 20px rgba(124, 58, 237, 0.25);">
+                                <i class="fa-solid fa-sparkles"></i> 生成无限城
+                            </button>
+                        </div>
+
+                        <div id="infinityCityLoader" style="text-align: center; color: #7c3aed; padding: 5rem 0; display: none;">
+                            <div class="cube-loader"></div>
+                            <p id="icLoadingText" style="margin-top: 2rem; font-weight: 600; font-size: 1.05rem;">AI 正在构建知识世界，请稍候...</p>
+                        </div>
+
+                        <div id="infinityCityDisplayArea" style="display: none; flex: 1; min-height: 0; padding: 1.25rem; gap: 1rem;">
+                            <div style="display: flex; gap: 1rem; min-height: calc(100vh - 220px);">
+                                <div class="ic-main-panel">
+                                    <div class="ic-toolbar">
+                                        <div id="icBreadcrumbs" class="ic-breadcrumbs"></div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button id="icBackBtn" class="secondary-btn" disabled><i class="fa-solid fa-arrow-left"></i> 返回上层</button>
+                                            <button id="icRegenerateCurrentBtn" class="primary-btn"><i class="fa-solid fa-rotate-right"></i> 重生成当前层</button>
+                                        </div>
+                                    </div>
+                                    <div id="infinityCityViewport" class="ic-viewport">
+                                        <div id="infinityCityImageWrap" class="ic-image-wrap">
+                                            <img id="infinityCityImage" class="ic-image" alt="Infinity City Scene">
+                                            <div id="infinityCityHotspots" class="ic-hotspots"></div>
+                                            <div id="infinityCityClickPulse" class="ic-click-pulse" style="display: none;"></div>
+                                        </div>
+                                        <div id="icOverlayHint" class="ic-overlay-hint">点击图中的任意位置，向内生成更细致的一层世界</div>
+                                    </div>
+                                </div>
+
+                                <div class="ic-side-panel">
+                                    <div class="ic-side-card">
+                                        <div class="ic-side-title"><i class="fa-solid fa-map-location-dot"></i> 当前视角</div>
+                                        <div id="icCurrentTitle" class="ic-current-title">尚未生成</div>
+                                        <p id="icCurrentSummary" class="ic-current-summary">这里会显示当前层的知识情境说明。</p>
+                                    </div>
+                                    <div class="ic-side-card">
+                                        <div class="ic-side-title"><i class="fa-solid fa-crosshairs"></i> 点击信息</div>
+                                        <div id="icClickInfo" class="ic-click-info">尚未点击任何区域</div>
+                                    </div>
+                                    <div class="ic-side-card">
+                                        <div class="ic-side-title"><i class="fa-solid fa-route"></i> 已生成热点</div>
+                                        <div id="icHotspotList" class="ic-hotspot-list">
+                                            <div class="ic-hotspot-empty">当前层还没有已缓存的细节入口</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prompt Modal -->
+                <div id="agentPromptModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                    <div class="modal-content" style="background: white; width: 400px; border-radius: 20px; padding: 2rem; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                        <button class="icon-btn" onclick="document.getElementById('agentPromptModal').style.display='none'" style="position: absolute; top: 1rem; right: 1rem;"><i class="fa-solid fa-xmark"></i></button>
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <img id="modalAgentAvatar" src="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 0.5rem;">
+                            <h3 id="modalAgentName" style="margin: 0; font-size: 1.25rem; color: var(--text-main);">Name</h3>
+                            <span id="modalAgentPersonality" style="background: rgba(79,70,229,0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600;">Personality</span>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">系统设定 (Prompt)</h4>
+                            <div id="modalAgentPrompt" style="background: #f8fafc; padding: 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right Panel: Studio -->
+            <section class="panel studio-panel" data-tilt data-tilt-max="2" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+                <div class="panel-header">
+                    <h2>Studio 工作室</h2>
+                    <button class="icon-btn"><i class="fa-solid fa-layer-group"></i></button>
+                </div>
+                
+                <div class="studio-grid">
+                    <button type="button" class="studio-card" onclick="openStudioTool('textbook')">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <span>AI 课本</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('classroom')">
+                        <i class="fa-solid fa-person-chalkboard"></i>
+                        <span>模拟课堂</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('mindmap')">
+                        <i class="fa-solid fa-network-wired"></i>
+                        <span>思维导图</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('report')">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <span>研究报告</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('flashcard')">
+                        <i class="fa-solid fa-clone"></i>
+                        <span>记忆闪卡</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('quiz')">
+                        <i class="fa-solid fa-clipboard-question"></i>
+                        <span>随堂测验</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('discussion')">
+                        <i class="fa-solid fa-users"></i>
+                        <span>小组讨论</span>
+                    </button>
+                    <button type="button" class="studio-card" onclick="openStudioTool('infinityCity')">
+                        <i class="fa-solid fa-city"></i>
+                        <span>无限城</span>
+                    </button>
+                </div>
+                
+                <div class="studio-footer">
+                    <div class="studio-empty-text">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <p>Studio 输出将保存在此处。</p>
+                        <span>添加来源后，点击即可添加 AI课本、学习指南、思维导图等！</span>
+                    </div>
+                    <button class="floating-action-btn" onclick="saveNotesToKnowledgeBase()">
+                        <i class="fa-solid fa-floppy-disk"></i> 保存笔记
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/mindmapnode.js') }}"></script>
+
+    <!-- Page Transition and Background Script -->
+    <script>
+        // Start transition overlay automatically to sync with page load
+        const overlay = document.getElementById('pageTransitionOverlay');
+        overlay.classList.add('active');
+        
+        // Fade out overlay on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 800); // wait for fade out transition
+            }, 300);
+        });
+
+        // Background Logic
+        const canvas = document.getElementById('mathBgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, points = [];
+        const spacing = 100; // More sparse for workspace
+
+        function initBg() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            points = [];
+            for (let x = 0; x < width + spacing; x += spacing) {
+                for (let y = 0; y < height + spacing; y += spacing) {
+                    points.push({
+                        baseX: x,
+                        baseY: y,
+                        x: x,
+                        y: y,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+        }
+
+        window.addEventListener('resize', initBg);
+
+        function animateBg(time) {
+            ctx.clearRect(0, 0, width, height);
+            const t = time * 0.0005;
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.03)';
+            
+            points.forEach(p => {
+                const breathing = Math.sin(t + p.phase) * 10;
+                p.x = p.baseX + breathing;
+                p.y = p.baseY + breathing;
+            });
+
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                for (let j = i + 1; j < points.length; j++) {
+                    const p2 = points[j];
+                    const d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (d < spacing * 1.2) {
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                }
+            }
+            ctx.stroke();
+            requestAnimationFrame(animateBg);
+        }
+
+        initBg();
+        requestAnimationFrame(animateBg);
+    </script>
+</body>
+</html>

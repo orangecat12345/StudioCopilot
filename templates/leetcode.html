@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI LeetCode 导师 - StudioCopilot</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Markdown & Syntax Highlight -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .lc-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Left Sidebar: Problem List */
+        .lc-sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .lc-sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .lc-sidebar-header .title-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .lc-sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1e293b;
+        }
+
+        .lc-back-btn {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .lc-back-btn:hover {
+            color: #4f46e5;
+        }
+
+        .lc-cat-btn {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .lc-cat-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .lc-problem-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .lc-problem-item {
+            padding: 1rem;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            color: #334155;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .lc-problem-item:hover {
+            background: #f1f5f9;
+        }
+
+        .lc-problem-item.active {
+            background: white;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            color: #4f46e5;
+        }
+
+        /* Main Content: Problem Details */
+        .lc-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            position: relative;
+        }
+        
+        .lc-tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 1rem;
+        }
+
+        .lc-tab {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .lc-tab:hover {
+            color: #4f46e5;
+        }
+
+        .lc-tab.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+
+        .lc-content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 3rem;
+        }
+        
+        /* Editor Area */
+        .lc-editor-area {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 1.5rem;
+        }
+        
+        .lc-editor-textarea {
+            flex: 1;
+            width: 100%;
+            resize: none;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1rem;
+            line-height: 1.5;
+            outline: none;
+            background: #f8fafc;
+            box-sizing: border-box;
+        }
+
+        .lc-editor-textarea:focus {
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .lc-submit-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #4f46e5, #818cf8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            align-self: flex-end;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+            transition: all 0.2s;
+        }
+
+        .lc-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .lc-media {
+            margin-bottom: 2rem;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .lc-media img, .lc-media video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .markdown-body {
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+            max-width: 100%;
+        }
+
+        /* Right Panel: AI Tutor Chat */
+        .lc-tutor-panel {
+            width: 400px;
+            background: #f8fafc;
+            border-left: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lc-tutor-header {
+            padding: 1.5rem;
+            background: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .lc-tutor-header i {
+            color: #4f46e5;
+            font-size: 1.5rem;
+        }
+
+        .lc-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 1rem;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .msg-ai {
+            background: white;
+            border: 1px solid #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: #1e293b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .msg-user {
+            background: #4f46e5;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .lc-chat-input-area {
+            padding: 1.5rem;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .lc-input-box {
+            display: flex;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .lc-input-box input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0.5rem;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .lc-input-box button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lc-input-box button:hover {
+            background: #4338ca;
+        }
+        
+        .loading-spinner {
+            color: #4f46e5;
+            font-size: 2rem;
+            margin: 2rem auto;
+            display: block;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lc-container">
+        <!-- Sidebar -->
+        <aside class="lc-sidebar" id="normalSidebar">
+            <div class="lc-sidebar-header">
+                <div class="title-area">
+                    <a href="/" class="lc-back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+                    <h2><i class="fa-solid fa-code" style="color: #4f46e5; margin-right: 8px;"></i>LeetCode</h2>
+                </div>
+                <button class="lc-cat-btn" onclick="openCatSetup()"><i class="fa-solid fa-bolt"></i> CAT 模式</button>
+            </div>
+            <div class="lc-problem-list" id="problemList">
+                <i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>
+            </div>
+        </aside>
+
+        <!-- CAT Dashboard Sidebar -->
+        <aside class="lc-sidebar" id="catSidebar" style="display: none; width: 350px;">
+            <div class="lc-sidebar-header" style="background: #f8fafc;">
+                <div class="title-area">
+                    <h2><i class="fa-solid fa-bolt" style="color: #10b981; margin-right: 8px;"></i>自适应测验</h2>
+                </div>
+                <button class="lc-cat-btn" style="background: #ef4444; box-shadow: none;" onclick="exitCatMode()">退出</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.9rem; color: #64748b; margin-bottom: 0.5rem;">当前能力值 (θ)</div>
+                    <div id="catThetaDisplay" style="font-size: 2.5rem; font-weight: 800; color: #10b981; line-height: 1;">1.50</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem;" id="catProgressDisplay">进度: 0 / 3 题</div>
+                </div>
+                
+                <div style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <div id="radarChart" style="width: 100%; height: 250px;"></div>
+                </div>
+                
+                <div style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <div id="lineChart" style="width: 100%; height: 200px;"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="lc-main">
+            <div class="lc-tabs">
+                <button class="lc-tab active" onclick="switchTab('question')">题目描述</button>
+                <button class="lc-tab" onclick="switchTab('editor')">编写解答</button>
+                <button class="lc-tab" onclick="switchTab('solution')">参考题解</button>
+            </div>
+            
+            <div class="lc-content-wrapper" id="questionTab">
+                <div style="text-align: center; margin-top: 20vh; color: #94a3b8;">
+                    <i class="fa-solid fa-laptop-code" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <h2>请在左侧选择一道题目开始学习</h2>
+                </div>
+            </div>
+            
+            <div class="lc-editor-area" id="editorTab">
+                <textarea class="lc-editor-textarea" id="codeEditor" placeholder="在这里输入你的代码或解题思路...
+例如：
+class Solution:
+    def twoSum(self, nums: List[int], target: int) -> List[int]:
+        # your code here"></textarea>
+                <button class="lc-submit-btn" onclick="submitAnswer()">
+                    <i class="fa-solid fa-paper-plane"></i> 提交解答让AI点评
+                </button>
+            </div>
+
+            <div class="lc-content-wrapper" id="solutionTab" style="display: none;">
+                <!-- Solution Content -->
+            </div>
+        </main>
+
+        <!-- AI Tutor Panel -->
+        <aside class="lc-tutor-panel">
+            <div class="lc-tutor-header">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.05rem; color: #1e293b;">AI 算法导师</h3>
+                    <p style="margin: 0; font-size: 0.8rem; color: #64748b;">启发式引导，拒绝直接给答案</p>
+                </div>
+            </div>
+            
+            <div class="lc-chat-messages" id="chatMessages">
+                <div class="msg msg-ai">
+                    你好！我是你的 AI 算法导师。选中一道题目后，如果遇到思路卡壳或者对解法有疑问，随时可以向我提问。我会通过苏格拉底式提问引导你一步步找到最优解！
+                </div>
+            </div>
+            
+            <div class="lc-chat-input-area">
+                <div class="lc-input-box">
+                    <input type="text" id="chatInput" placeholder="输入你的问题或思考..." disabled>
+                    <button id="sendBtn" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- CAT Setup Modal -->
+    <div id="catSetupModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: white; width: 450px; border-radius: 20px; padding: 2.5rem; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+            <button onclick="document.getElementById('catSetupModal').style.display='none'" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #34d399); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; margin: 0 auto 1rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">开启自适应刷题 (CAT)</h3>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #64748b;">AI 将根据你的做题表现，动态推荐最适合你当前能力的题目。</p>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1e293b; font-size: 0.9rem;">请评估你目前的算法水平：</label>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <input type="radio" name="initialTheta" value="0.5" style="accent-color: #10b981;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">入门新手 🟢</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">刚开始接触算法，适合做 Easy 难度的题目</div>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <input type="radio" name="initialTheta" value="1.5" checked style="accent-color: #10b981;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">进阶选手 🟡</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">有一定刷题经验，能应付大部分 Medium 题目</div>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <input type="radio" name="initialTheta" value="2.5" style="accent-color: #10b981;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">算法高手 🔴</div>
+                            <div style="font-size: 0.8rem; color: #64748b;">目标直指大厂 Offer，直接挑战 Hard 难度</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1e293b; font-size: 0.9rem;">本次计划刷多少题？</label>
+                <input type="number" id="catProblemCount" value="3" min="1" max="10" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; font-size: 1rem; box-sizing: border-box;">
+            </div>
+            <button onclick="startCatSession()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #10b981, #34d399); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); transition: all 0.2s;">
+                立即开始测试
+            </button>
+        </div>
+    </div>
+    
+    <!-- Final Report Modal -->
+    <div id="catReportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: white; width: 600px; border-radius: 20px; padding: 2.5rem; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #fbbf24); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; margin: 0 auto 1rem; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 style="margin: 0; font-size: 1.5rem; color: #1e293b;">测验完成！</h2>
+            <p style="margin: 0.5rem 0 2rem 0; font-size: 0.95rem; color: #64748b;">你的综合算法能力评估报告</p>
+            
+            <div style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-around; align-items: center;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.25rem;">完成题数</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;" id="reportCount">3</div>
+                </div>
+                <div style="width: 1px; height: 40px; background: #e2e8f0;"></div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.25rem;">最终能力值 (θ)</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #10b981;" id="reportTheta">1.85</div>
+                </div>
+                <div style="width: 1px; height: 40px; background: #e2e8f0;"></div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.25rem;">评定段位</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #f59e0b;" id="reportRank">进阶选手</div>
+                </div>
+            </div>
+
+            <div style="text-align: left; margin-bottom: 2rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1.5rem;">
+                <h4 style="margin: 0 0 0.75rem 0; color: #d97706; font-size: 1rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 综合诊断</h4>
+                <div id="reportAIConclusion" style="font-size: 0.95rem; color: #92400e; line-height: 1.6;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> 正在生成你的个性化诊断报告...
+                </div>
+            </div>
+            
+            <button onclick="exitCatMode(); document.getElementById('catReportModal').style.display='none'" style="padding: 0.8rem 2.5rem; background: #4f46e5; color: white; border: none; border-radius: 99px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                返回题库继续学习
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentProblemContext = "";
+        let currentProblemId = null;
+        
+        // CAT State
+        let isCatMode = false;
+        let catTheta = 1.5;
+        let catHistory = [];
+        let catTargetCount = 3;
+        let catCurrentCount = 0;
+        let thetaHistory = [1.5];
+        let catEvalHistory = [];
+        
+        // Charts
+        let radarChartInstance = null;
+        let lineChartInstance = null;
+
+        // Initialize marked with highlight.js
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true
+        });
+        
+        // Tab switching logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.lc-tab').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.lc-tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            
+            document.getElementById('questionTab').style.display = tabId === 'question' ? 'block' : 'none';
+            document.getElementById('editorTab').style.display = tabId === 'editor' ? 'flex' : 'none';
+            document.getElementById('solutionTab').style.display = tabId === 'solution' ? 'block' : 'none';
+        }
+
+        // CAT Mode Functions
+        function openCatSetup() {
+            document.getElementById('catSetupModal').style.display = 'flex';
+        }
+        
+        function exitCatMode() {
+            isCatMode = false;
+            document.getElementById('catSidebar').style.display = 'none';
+            document.getElementById('normalSidebar').style.display = 'flex';
+            document.getElementById('catReportModal').style.display = 'none';
+            loadProblemList();
+        }
+
+        function startCatSession() {
+            const count = parseInt(document.getElementById('catProblemCount').value) || 3;
+            // Get initial theta from radio buttons
+            const initialThetaRadio = document.querySelector('input[name="initialTheta"]:checked');
+            const initialTheta = initialThetaRadio ? parseFloat(initialThetaRadio.value) : 1.5;
+            
+            catTargetCount = count;
+            catCurrentCount = 0;
+            catTheta = initialTheta;
+            thetaHistory = [initialTheta];
+            catHistory = [];
+            catEvalHistory = [];
+            isCatMode = true;
+            
+            document.getElementById('catSetupModal').style.display = 'none';
+            document.getElementById('normalSidebar').style.display = 'none';
+            document.getElementById('catSidebar').style.display = 'flex';
+            
+            document.getElementById('catProgressDisplay').textContent = `进度: 0 / ${catTargetCount} 题`;
+            initCharts();
+            updateCatDashboard();
+            
+            nextCatProblem();
+        }
+        
+        async function nextCatProblem() {
+            try {
+                const response = await fetch('/api/leetcode/cat/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        theta: catTheta,
+                        history: catHistory
+                    })
+                });
+                const data = await response.json();
+                if(data.status === 'success') {
+                    loadProblemDetail(data.data.id);
+                } else {
+                    alert('没有更多题目了！');
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        async function finishCatSession() {
+            document.getElementById('catReportModal').style.display = 'flex';
+            document.getElementById('reportCount').textContent = catCurrentCount;
+            document.getElementById('reportTheta').textContent = catTheta.toFixed(2);
+            
+            // Translate Rank
+            let rankStr = "入门新手 🟢";
+            if(catTheta > 2.0) rankStr = "算法高手 🔴";
+            else if(catTheta > 1.0) rankStr = "进阶选手 🟡";
+            document.getElementById('reportRank').textContent = rankStr;
+            
+            document.getElementById('reportAIConclusion').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 正在生成你的个性化诊断报告...';
+            
+            try {
+                const response = await fetch('/api/leetcode/cat/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        theta: catTheta,
+                        evals: catEvalHistory
+                    })
+                });
+                const data = await response.json();
+                if(data.status === 'success') {
+                    document.getElementById('reportAIConclusion').textContent = data.report;
+                } else {
+                    document.getElementById('reportAIConclusion').textContent = "生成报告失败，请稍后重试。";
+                }
+            } catch(e) {
+                document.getElementById('reportAIConclusion').textContent = "网络请求失败，无法生成报告。";
+            }
+        }
+        
+        function initCharts() {
+            if(radarChartInstance) radarChartInstance.dispose();
+            if(lineChartInstance) lineChartInstance.dispose();
+            
+            radarChartInstance = echarts.init(document.getElementById('radarChart'));
+            lineChartInstance = echarts.init(document.getElementById('lineChart'));
+            
+            window.addEventListener('resize', function() {
+                radarChartInstance.resize();
+                lineChartInstance.resize();
+            });
+        }
+        
+        function updateCatDashboard(scores = null) {
+            document.getElementById('catThetaDisplay').textContent = catTheta.toFixed(2);
+            
+            let radarValues = [0, 0, 0, 0];
+            if(scores) {
+                radarValues = [scores.correctness, scores.algorithm, scores.complexity, scores.code_quality];
+            }
+            
+            radarChartInstance.setOption({
+                title: { text: '上题质量雷达', textStyle: { fontSize: 12, color: '#64748b' }, left: 'center', top: 0 },
+                radar: {
+                    indicator: [
+                        { name: '正确性', max: 10 },
+                        { name: '算法思路', max: 10 },
+                        { name: '复杂度', max: 10 },
+                        { name: '代码质量', max: 10 }
+                    ],
+                    radius: '60%',
+                    center: ['50%', '55%']
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{
+                        value: radarValues,
+                        name: 'AI 评分',
+                        areaStyle: { color: 'rgba(16, 185, 129, 0.2)' },
+                        lineStyle: { color: '#10b981' },
+                        itemStyle: { color: '#10b981' }
+                    }]
+                }]
+            });
+            
+            lineChartInstance.setOption({
+                title: { text: '能力成长曲线', textStyle: { fontSize: 12, color: '#64748b' }, left: 'center', top: 0 },
+                xAxis: { type: 'category', data: thetaHistory.map((_, i) => i === 0 ? '初始' : `题${i}`) },
+                yAxis: { type: 'value', min: 0, max: 3 },
+                series: [{
+                    data: thetaHistory,
+                    type: 'line',
+                    smooth: true,
+                    itemStyle: { color: '#4f46e5' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(79, 70, 229, 0.3)' },
+                            { offset: 1, color: 'rgba(79, 70, 229, 0)' }
+                        ])
+                    }
+                }],
+                grid: { top: 30, bottom: 20, left: 30, right: 10 }
+            });
+        }
+        async function loadProblemList() {
+            try {
+                const res = await fetch('/api/leetcode/list');
+                const data = await res.json();
+                
+                const listEl = document.getElementById('problemList');
+                listEl.innerHTML = '';
+                
+                if(data.status === 'success') {
+                    data.data.forEach(p => {
+                        const item = document.createElement('div');
+                        item.className = 'lc-problem-item';
+                        item.textContent = p.title;
+                        item.onclick = () => loadProblemDetail(p.id, item);
+                        listEl.appendChild(item);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load list:', err);
+                document.getElementById('problemList').innerHTML = '<div style="color: red; padding: 1rem;">加载题库失败</div>';
+            }
+        }
+
+        // Load problem details
+        async function loadProblemDetail(id, element) {
+            if(!isCatMode) {
+                // Update active state only in normal mode
+                document.querySelectorAll('.lc-problem-item').forEach(el => el.classList.remove('active'));
+                if(element) element.classList.add('active');
+            }
+            
+            currentProblemId = id;
+            const questionTab = document.getElementById('questionTab');
+            const solutionTab = document.getElementById('solutionTab');
+            const codeEditor = document.getElementById('codeEditor');
+            
+            questionTab.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>';
+            solutionTab.innerHTML = '';
+            codeEditor.value = '';
+            
+            switchTab('question');
+            
+            try {
+                const res = await fetch(`/api/leetcode/detail/${encodeURIComponent(id)}`);
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    const detail = data.data;
+                    currentProblemContext = detail.question.substring(0, 1500); // Send partial content as context
+                    
+                    let questionHtml = `<h1>${id}</h1>`;
+                    
+                    // Render markdown for question
+                    questionHtml += `<div class="markdown-body">${marked.parse(detail.question)}</div>`;
+                    questionTab.innerHTML = questionHtml;
+                    
+                    // Render solution & media
+                    let solutionHtml = `<h2>参考解析与代码</h2>`;
+                    if(detail.animations && detail.animations.length > 0) {
+                        const mediaFile = detail.animations[0];
+                        const mediaUrl = `/api/leetcode/resource/${encodeURIComponent(id)}/${encodeURIComponent(mediaFile)}`;
+                        solutionHtml += `<div class="lc-media">`;
+                        if(mediaFile.endsWith('.mp4')) {
+                            solutionHtml += `<video src="${mediaUrl}" controls autoplay loop muted></video>`;
+                        } else {
+                            solutionHtml += `<img src="${mediaUrl}" alt="Animation">`;
+                        }
+                        solutionHtml += `</div>`;
+                    }
+                    solutionHtml += `<div class="markdown-body">${marked.parse(detail.solution)}</div>`;
+                    solutionTab.innerHTML = solutionHtml;
+                    
+                    // Highlight code blocks
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                    
+                    // Enable chat
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+                    
+                    // Add AI greeting for this problem
+                    document.getElementById('chatMessages').innerHTML = '';
+                    if(isCatMode) {
+                        appendMessage('ai', `当前题目为 **CAT 自适应模式** 推荐题目：\n**《${id}》**\n\n请在 **"编写解答"** 区域写下你的代码，提交后我将从4个维度进行评估，并实时更新你的能力曲线！`);
+                    } else {
+                        appendMessage('ai', `我已经准备好辅导你学习《${id}》了。先仔细看题，然后可以在 **"编写解答"** 区域写代码提交给我点评，或者遇到卡壳随时在这里向我提问！`);
+                    }
+                }
+            } catch(err) {
+                console.error(err);
+                questionTab.innerHTML = '<div style="color: red; text-align: center; margin-top: 2rem;">加载题目详情失败</div>';
+            }
+        }
+
+        // Chat logic
+        function appendMessage(role, content) {
+            const container = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = `msg msg-${role}`;
+            if(role === 'ai') {
+                msgEl.innerHTML = marked.parse(content);
+                msgEl.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            } else {
+                msgEl.textContent = content;
+            }
+            container.appendChild(msgEl);
+            container.scrollTop = container.scrollHeight;
+            return msgEl;
+        }
+
+        async function submitAnswer() {
+            const editor = document.getElementById('codeEditor');
+            const code = editor.value.trim();
+            if(!code || !currentProblemId) {
+                alert('请先输入你的代码！');
+                return;
+            }
+            
+            appendMessage('user', `[提交了代码]\n\`\`\`\n${code}\n\`\`\``);
+            
+            const aiMsgEl = appendMessage('ai', '<i class="fa-solid fa-ellipsis fa-fade"></i> AI 正在运行和评估你的代码...');
+            
+            try {
+                if(isCatMode) {
+                    const response = await fetch('/api/leetcode/cat/evaluate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            problem_id: currentProblemId,
+                            code: code,
+                            theta: catTheta
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if(data.status === 'success') {
+                        const evalResult = data.evaluation;
+                        let responseHtml = `### 🎯 评估结果: ${evalResult.is_ac ? '✅ 通过' : '❌ 未通过'}\n\n`;
+                        responseHtml += `| 评价维度 | 分数 (0-10) |\n|---|---|\n`;
+                        responseHtml += `| **代码正确性** | ${evalResult.scores.correctness} |\n`;
+                        responseHtml += `| **算法思路** | ${evalResult.scores.algorithm} |\n`;
+                        responseHtml += `| **复杂度优化** | ${evalResult.scores.complexity} |\n`;
+                        responseHtml += `| **代码质量** | ${evalResult.scores.code_quality} |\n\n`;
+                        responseHtml += `### 💡 导师反馈\n${evalResult.feedback}`;
+                        
+                        aiMsgEl.innerHTML = marked.parse(responseHtml);
+                        aiMsgEl.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+                        
+                        // Update CAT State
+                        catTheta = data.new_theta;
+                        thetaHistory.push(catTheta);
+                        catEvalHistory.push({
+                            id: currentProblemId,
+                            scores: evalResult.scores
+                        });
+                        updateCatDashboard(evalResult.scores);
+                        
+                        if(evalResult.is_ac || evalResult.scores.correctness >= 6) {
+                            catHistory.push(currentProblemId);
+                            catCurrentCount++;
+                            document.getElementById('catProgressDisplay').textContent = `进度: ${catCurrentCount} / ${catTargetCount} 题`;
+                            
+                            if(catCurrentCount >= catTargetCount) {
+                                setTimeout(finishCatSession, 1500);
+                            } else {
+                                appendMessage('ai', '🎉 **恭喜你解答正确！** \n\n请点击下方按钮进入下一题。\n\n<button class="lc-cat-btn" onclick="nextCatProblem()">👉 获取下一题</button>');
+                            }
+                        } else {
+                            appendMessage('ai', '💡 **解答有误，请参考上面的建议修改后再次提交！**');
+                        }
+                    } else {
+                        aiMsgEl.innerHTML = '<span style="color: red;">评估失败</span>';
+                    }
+                } else {
+                    const response = await fetch('/api/leetcode/tutor', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: code,
+                            context: currentProblemContext,
+                            mode: 'submit'
+                        })
+                    });
+                    
+                    await handleStreamResponse(response, aiMsgEl);
+                }
+            } catch(err) {
+                console.error(err);
+                aiMsgEl.innerHTML = '<span style="color: red;">抱歉，网络连接出错了。</span>';
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text || !currentProblemId) return;
+            
+            appendMessage('user', text);
+            input.value = '';
+            
+            const aiMsgEl = appendMessage('ai', '<i class="fa-solid fa-ellipsis fa-fade"></i> 思考中...');
+            
+            try {
+                const response = await fetch('/api/leetcode/tutor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        context: currentProblemContext,
+                        mode: 'chat'
+                    })
+                });
+                
+                await handleStreamResponse(response, aiMsgEl);
+            } catch(err) {
+                console.error(err);
+                aiMsgEl.innerHTML = '<span style="color: red;">抱歉，网络连接出错了。</span>';
+            }
+        }
+
+        async function handleStreamResponse(response, aiMsgEl, onDone = null) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let aiResponseText = '';
+            
+            while(true) {
+                const {done, value} = await reader.read();
+                if(done) {
+                    if(onDone) onDone(aiResponseText);
+                    break;
+                }
+                
+                const chunk = decoder.decode(value, {stream: true});
+                const lines = chunk.split('\n');
+                
+                for(const line of lines) {
+                    if(line.startsWith('data: ')) {
+                        const dataStr = line.substring(6).trim();
+                        if(dataStr === '[DONE]') continue;
+                        if(dataStr) {
+                            try {
+                                const dataObj = JSON.parse(dataStr);
+                                if(dataObj.content) {
+                                    aiResponseText += dataObj.content;
+                                    aiMsgEl.innerHTML = marked.parse(aiResponseText);
+                                    // Add syntax highlighting to the newly added markdown code blocks
+                                    aiMsgEl.querySelectorAll('pre code').forEach((block) => {
+                                        hljs.highlightElement(block);
+                                    });
+                                    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                }
+            }
+        }
+
+        document.getElementById('sendBtn').onclick = sendMessage;
+        document.getElementById('chatInput').onkeypress = (e) => {
+            if(e.key === 'Enter') sendMessage();
+        };
+
+        // Init
+        loadProblemList();
+    </script>
+</body>
+</html>

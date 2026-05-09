@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudioCopilot - 智能辅助学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Markdown & Syntax Highlight -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown-light.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 2rem 2.5rem;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+            color: #1e293b;
+            line-height: 1.7;
+        }
+        .markdown-body h1, .markdown-body h2 {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5em;
+            color: #0f172a;
+        }
+        .markdown-body h3 {
+            color: #1e293b;
+        }
+        .markdown-body a {
+            color: #4f46e5 !important;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .markdown-body a:hover {
+            text-decoration: underline;
+            color: #4338ca !important;
+        }
+        .markdown-body blockquote {
+            color: #475569;
+            border-left: 4px solid #818cf8;
+            background: #e0e7ff;
+            padding: 1em 1.5em;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5em 0;
+        }
+        .markdown-body code:not([class]) {
+            background: #f1f5f9;
+            color: #be123c;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .markdown-body pre {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .markdown-body img {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+        }
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+    </style>
+    <!-- Mermaid.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <!-- MathJax -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+
+    <!-- 3D Assets and Interactions -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.51/build/spline-viewer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+</head>
+<body>
+
+    <!-- Mathematical Dynamic Background -->
+    <div class="math-bg-container">
+        <canvas id="mathBgCanvas"></canvas>
+        <div class="glass-overlay"></div>
+    </div>
+
+    <!-- Page Transition Overlay -->
+    <div id="pageTransitionOverlay" class="page-transition-overlay">
+        <div class="transition-logo">
+            <i class="fa-solid fa-brain-circuit"></i>
+        </div>
+        <div style="font-weight: 700; color: #1e1b4b; letter-spacing: 2px;">STUDIO COPILOT</div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <span>StudioCopilot</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="ai">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>StudioCopilot</span>
+                </a>
+                <a href="#" class="nav-item" data-target="my-notes">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>我的笔记</span>
+                </a>
+                <a href="/leetcode" class="nav-item">
+                    <i class="fa-solid fa-code"></i>
+                    <span>LeetCode 题库</span>
+                </a>
+                <a href="#" class="nav-item" data-target="super-search">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span>超级搜索</span>
+                </a>
+                <a href="#" class="nav-item" data-target="ai-market">
+                    <i class="fa-solid fa-store"></i>
+                    <span>应用市场</span>
+                </a>
+                <a href="#" class="nav-item" data-target="social">
+                    <i class="fa-solid fa-earth-asia"></i>
+                    <span>学习圈</span>
+                </a>
+                <a href="#" class="nav-item" data-target="resources">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>资源中心</span>
+                </a>
+                <a href="#" class="nav-item" data-target="analysis">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>分析</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-mini-profile" id="userProfileEntry">
+                    <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" class="avatar-sm">
+                    <div class="user-info">
+                        <span class="name">User</span>
+                        <span class="plan">Free Plan</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header (Floating) -->
+            <header class="top-header">
+                <div class="glass-nav">
+                    <div class="breadcrumb" id="breadcrumb">
+                        <span class="home-icon"><i class="fa-solid fa-house"></i></span>
+                        <i class="fa-solid fa-chevron-right separator"></i>
+                        <span class="current" id="breadcrumbCurrent">StudioCopilot</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
+                        <button class="upgrade-btn">升级 Pro <i class="fa-solid fa-bolt"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Operation Area -->
+            <div class="operation-area">
+                
+                <!-- 0. AI Journal View (New Feature) -->
+                <div id="journalView" class="journal-view" style="display: none;">
+                </div>
+
+                <!-- 1. Landing View (Initial State) -->
+                <div id="landingView" class="landing-view" style="position: relative; overflow: hidden; background: transparent !important;">
+                    <!-- Hero Section -->
+                    <div class="landing-hero" id="heroSection">
+                        <!-- Dynamic Background -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 1; pointer-events: none; overflow: hidden; background: #ffffff;">
+                            <!-- Animated Gradient Orbs (Light Theme) -->
+                            <div style="position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(255,255,255,0) 60%); filter: blur(60px); animation: pulseFloat1 12s ease-in-out infinite alternate;"></div>
+                            <div style="position: absolute; bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, rgba(255,255,255,0) 60%); filter: blur(80px); animation: pulseFloat2 15s ease-in-out infinite alternate-reverse;"></div>
+                            <div style="position: absolute; top: 30%; left: 50%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(255,255,255,0) 60%); filter: blur(70px); animation: pulseFloat3 18s ease-in-out infinite alternate;"></div>
+                            
+                            <!-- Flowing Grid Pattern Overlay -->
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px); background-size: 50px 50px; transform: perspective(500px) rotateX(60deg) translateY(-100px) scale(3); transform-origin: top center; animation: gridMove 20s linear infinite;"></div>
+                            
+                            <!-- Floating Particles (Light Theme) -->
+                            <div class="light-particles-overlay"></div>
+                        </div>
+
+                        <!-- Hero Content (Needs higher z-index to sit above background) -->
+                        <div class="hero-content" style="position: relative; z-index: 10;">
+                            <div class="hero-badge" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.15); color: #4f46e5; backdrop-filter: blur(10px);">
+                                <i class="fa-solid fa-wand-magic-sparkles" style="color: #6366f1;"></i> 
+                                <span>AI Powered Learning V2.0</span>
+                            </div>
+                            <h1 class="landing-title">
+                                <span class="product-name-hero" style="background: linear-gradient(to right, #1e1b4b, #4338ca); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);">StudioCopilot</span>
+                            </h1>
+                            <p class="landing-subtitle" style="max-width: 600px; margin: 0 auto 2.5rem; font-size: 1.1rem; color: #475569;">开启下一代智能知识图谱与 AI 助手工作流，探索您的专属思维空间。</p>
+                            
+                            <div class="entrance-action-wrapper" style="margin-top: 3rem; position: relative; z-index: 10; display: flex; justify-content: center; align-items: center;">
+                                <a href="javascript:void(0)" onclick="transitionToWorkspace()" class="gorgeous-launch-btn">
+                                    <div class="btn-glow"></div>
+                                    <div class="btn-content">
+                                        <i class="fa-solid fa-rocket-launch"></i>
+                                        <span>立即启动 StudioCopilot</span>
+                                        <i class="fa-solid fa-chevron-right" style="margin-left: 0.5rem; transition: transform 0.3s ease;"></i>
+                                    </div>
+                                    <div class="btn-particles">
+                                        <i></i><i></i><i></i><i></i>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <!-- Hidden inputs to keep script.js happy without causing layout issues -->
+                            <div style="display: none;">
+                                <textarea id="landingInput"></textarea>
+                                <button id="landingSendBtn"></button>
+                                <textarea id="chatInput"></textarea>
+                                <button id="chatSendBtn"></button>
+                                <button id="thinkingToggleBtn"></button>
+                                <button id="searchToggleBtn"></button>
+                                <span id="appPlayerMeta"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- New Modern Scroll Hint -->
+                        <div class="scroll-pill-container" id="scrollTrigger">
+                            <div class="scroll-pill">
+                                <span>开始探索</span>
+                                <div class="icon-circle">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Discovery Feed -->
+                    <div class="discovery-feed-section" id="discoverySection">
+                        <div class="section-header-row">
+                            <h2>精选推荐</h2>
+                            <div class="tabs">
+                                <button class="tab active">热门</button>
+                                <button class="tab">最新</button>
+                                <button class="tab">视频</button>
+                            </div>
+                        </div>
+                        <div class="materials-grid-container" id="discoveryGrid">
+                            <!-- Discovery items will be loaded here -->
+                            <div class="loading-state">
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Back to Top Button -->
+                    <button id="backToTopBtn" class="back-to-top-btn" aria-label="返回顶部">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+
+                <!-- 2. Chat View (Active State) -->
+                <div id="chatView" class="chat-view" style="display: none;">
+                    <div class="chat-container" id="chatContainer" style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; text-align: center;">
+                        <div class="upgrade-info" style="margin-bottom: 2.5rem;">
+                            <div class="icon-pulse" style="width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <h3 style="font-size: 2rem; color: var(--text-dark); margin-bottom: 1rem; font-weight: 800;">AI 助手已全面升级</h3>
+                            <p style="color: var(--text-light); font-size: 1.1rem; max-width: 500px; margin: 0 auto;">旧版对话界面已停用。请启动全新的 StudioCopilot 沉浸式工作区。</p>
+                        </div>
+                        
+                        <a href="/mindmapnode" class="gorgeous-launch-btn">
+                            <div class="btn-glow"></div>
+                            <div class="btn-content">
+                                <i class="fa-solid fa-rocket-launch"></i>
+                                <span>立即进入 StudioCopilot</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                            <div class="btn-particles">
+                                <i></i><i></i><i></i><i></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2.5 Super Search View -->
+                <div id="superSearchView" class="super-search-view" style="display: none;">
+                    <div class="super-search-container">
+                         <div class="super-search-header">
+                              <h2><i class="fa-solid fa-network-wired"></i> 超级搜索</h2>
+                         </div>
+                         <div class="super-search-input-wrapper">
+                              <input type="text" id="superSearchInput" placeholder="输入你想探索的知识点，例如：量子纠缠、Transformer模型...">
+                              <button id="superSearchBtn" class="super-search-btn">
+                                  <i class="fa-solid fa-magnifying-glass"></i> 深度探索
+                              </button>
+                         </div>
+                         
+                         <!-- Graph Controls -->
+                         <div class="graph-controls">
+                             <div class="control-group">
+                                 <button id="zoomOutBtn" class="control-btn" title="缩小"><i class="fa-solid fa-minus"></i></button>
+                                 <input type="range" id="zoomSlider" min="0.1" max="3" step="0.1" value="1">
+                                 <button id="zoomInBtn" class="control-btn" title="放大"><i class="fa-solid fa-plus"></i></button>
+                             </div>
+                             <div class="control-group view-mode-switch">
+                                 <button id="viewTreeBtn" class="view-mode-btn" title="树形结构">
+                                     <i class="fa-solid fa-sitemap"></i> 树形
+                                 </button>
+                                 <button id="viewConstellationBtn" class="view-mode-btn" title="知识星图">
+                                     <i class="fa-solid fa-circle-nodes"></i> 星图
+                                 </button>
+                             </div>
+                             <div class="control-group">
+                                 <button id="fitViewBtn" class="control-btn" title="适应屏幕"><i class="fa-solid fa-compress"></i></button>
+                                 <button id="fullscreenBtn" class="control-btn" title="全屏模式"><i class="fa-solid fa-expand"></i></button>
+                             </div>
+                         </div>
+
+                         <div class="super-search-intel-bar" id="superSearchIntelBar">
+                             <div class="intel-metrics" id="superSearchMetrics">
+                                 <span class="intel-chip"><i class="fa-solid fa-diagram-project"></i> 节点 0</span>
+                                 <span class="intel-chip"><i class="fa-solid fa-layer-group"></i> 层级 0</span>
+                                 <span class="intel-chip"><i class="fa-solid fa-sitemap"></i> 叶子 0</span>
+                                 <span class="intel-chip"><i class="fa-solid fa-bolt"></i> 连接 0</span>
+                             </div>
+                             <div class="intel-tags" id="superSearchTopTags"></div>
+                         </div>
+
+                         <div class="super-search-chart-container" id="superSearchChart">
+                             <div class="chart-placeholder">
+                                 <div class="placeholder-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+                                 <p>输入关键词，生成交互式知识图谱</p>
+                             </div>
+                         </div>
+                         
+                         <!-- Side Panel for Details -->
+                         <div class="super-search-panel" id="superSearchPanel">
+                             <div class="panel-header">
+                                 <h3 id="panelTitle">知识点详情</h3>
+                                 <button class="close-panel-btn" id="closePanelBtn"><i class="fa-solid fa-xmark"></i></button>
+                             </div>
+                             <div class="panel-content">
+                                 <div class="panel-section">
+                                     <h4><i class="fa-solid fa-align-left"></i> 摘要</h4>
+                                     <p id="panelDesc">请点击图谱中的知识节点查看详情。</p>
+                                 </div>
+                                 <div class="panel-section">
+                                     <h4><i class="fa-solid fa-book-open"></i> 详细解析</h4>
+                                     <div id="panelDetail" class="detail-content"></div>
+                                 </div>
+                                 <div class="panel-section">
+                                     <h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI 交互增强</h4>
+                                     <div class="super-ai-actions">
+                                         <button class="super-ai-btn" id="assistExpandBtn"><i class="fa-solid fa-magnifying-glass-plus"></i> AI继续深挖</button>
+                                         <button class="super-ai-btn" id="assistLessonBtn"><i class="fa-solid fa-chalkboard-user"></i> 生成课堂设计</button>
+                                         <button class="super-ai-btn" id="assistQuizBtn"><i class="fa-solid fa-list-check"></i> 生成测验题</button>
+                                     </div>
+                                     <div id="assistResult" class="assist-result"></div>
+                                 </div>
+                                 <div class="panel-section">
+                                     <h4><i class="fa-solid fa-link"></i> 相关资源</h4>
+                                     <div id="panelLinks" class="link-list"></div>
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Resources Center View -->
+                <div id="resourcesView" class="resources-view" style="display: none; height: 100%;">
+                    
+                    <!-- View 1: Main Resource Hub (Grid/Bubbles) -->
+                    <div id="resourcesHubView" class="resources-hub" style="height: 100%; overflow-y: auto; padding: 2rem; background: var(--bg-primary);">
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                                <div>
+                                    <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin: 0 0 0.5rem 0;">
+                                        <i class="fa-solid fa-layer-group" style="color: var(--primary-color); margin-right: 12px;"></i>资源大厅
+                                    </h2>
+                                    <p style="color: var(--text-light); margin: 0; font-size: 1.1rem;">探索为您精选的全方位学习资源与资讯</p>
+                                </div>
+                            </div>
+                            
+                            <div class="resources-grid" id="resourcesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                                <!-- Bubbles will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View 2: Detailed Reading View (Sidebar + Content) -->
+                    <div id="resourcesDetailView" class="resources-detail-container" style="display: none; height: 100%; width: 100%; background: var(--bg-primary); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-md); position: relative;">
+                        <button id="backToHubBtn" style="position: absolute; top: 1rem; left: 1rem; z-index: 100; padding: 8px 16px; background: white; border: 1px solid var(--border-color); border-radius: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-weight: 500; color: var(--text-dark); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                            <i class="fa-solid fa-arrow-left"></i> 返回大厅
+                        </button>
+                        <div class="resources-sidebar" style="width: 300px; min-width: 300px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; background: var(--bg-secondary); padding-top: 4rem;">
+                            <div class="resources-sidebar-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+                                <h3 id="currentResourceTitle" style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-dark);">
+                                    资源目录
+                                </h3>
+                            </div>
+                            <div id="resourcesSidebarNav" style="display: none; padding: 1rem 1rem 0 1rem;">
+                                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <li class="resource-nav-item active" data-nav="local" style="padding: 10px 12px; background: rgba(99, 102, 241, 0.1); color: var(--primary-color); border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center;">
+                                        <i class="fa-solid fa-folder-tree" style="margin-right: 8px; width: 20px;"></i> 本地指南文档
+                                    </li>
+                                    <li class="resource-nav-item" data-nav="web" style="padding: 10px 12px; color: #1e293b; border-radius: 6px; cursor: pointer; font-weight: 500; transition: background 0.2s; display: flex; align-items: center;">
+                                        <i class="fa-solid fa-globe" style="margin-right: 8px; color: #64748b; width: 20px;"></i> 网页资源大盘
+                                    </li>
+                                </ul>
+                                <div style="height: 1px; background: var(--border-color); margin-top: 1rem;"></div>
+                            </div>
+                            <div class="resources-tree" id="resourcesTree" style="flex: 1; overflow-y: auto; padding: 1rem;">
+                                <div class="loading-state"><div class="loader"></div></div>
+                            </div>
+                        </div>
+                        <div class="resources-content" id="resourcesContent" style="flex: 1; overflow-y: auto; padding: 2rem; background: #fff; position: relative;">
+                            <div class="resources-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-light); text-align: center;">
+                                <i class="fa-regular fa-folder-open" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-dark);">选择左侧资源开始阅读</h3>
+                                <p style="max-width: 400px; line-height: 1.6;">在沉浸式的阅读体验中，您可以随时做笔记、查阅解析。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="aiMarketView" class="ai-market-view" style="display: none;">
+                    <div class="ai-market-container">
+                        <div class="ai-market-hero">
+                            <div class="market-hero-title">
+                                <h2><i class="fa-solid fa-graduation-cap"></i> AI 教育应用市场</h2>
+                            </div>
+                            <button id="createAiAppBtn" class="market-create-btn">
+                                <i class="fa-solid fa-plus"></i> 创建 AI 教育应用
+                            </button>
+                        </div>
+                        <div class="market-stats" id="marketStats">
+                            <span class="market-stat-chip"><i class="fa-solid fa-cubes"></i> 应用 0</span>
+                            <span class="market-stat-chip"><i class="fa-solid fa-layer-group"></i> 分类 0</span>
+                            <span class="market-stat-chip"><i class="fa-solid fa-star"></i> 推荐 0</span>
+                        </div>
+                        <div class="market-toolbar">
+                            <div class="market-search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input id="marketSearchInput" type="text" placeholder="搜索应用名称、分类、标签...">
+                            </div>
+                            <div class="market-toolbar-actions">
+                                <select id="marketSortSelect" class="market-select">
+                                    <option value="featured">推荐优先</option>
+                                    <option value="name">名称排序</option>
+                                    <option value="category">分类排序</option>
+                                </select>
+                                <button id="marketFeaturedOnlyBtn" class="market-filter-btn">
+                                    <i class="fa-solid fa-crown"></i> 仅看推荐
+                                </button>
+                                <button id="marketResetBtn" class="market-reset-btn">重置</button>
+                            </div>
+                        </div>
+                        <div class="market-feature-strip">
+                            <button id="openAiStudioBtn" class="market-feature-btn">
+                                <i class="fa-solid fa-sparkles"></i>
+                                <span>进入 AI 创造应用控制台</span>
+                            </button>
+                            <button id="openMyAppsBtn" class="market-feature-btn ghost">
+                                <i class="fa-solid fa-cubes"></i>
+                                <span>查看我生成的应用</span>
+                            </button>
+                        </div>
+                        <div id="marketCategoryFilters" class="market-category-filters"></div>
+                        <div id="marketResultMeta" class="market-result-meta">共 0 个应用</div>
+                        <div class="ai-market-grid" id="aiAppsGrid">
+                            <div class="loading-state">
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="aiStudioView" class="ai-studio-view" style="display: none;">
+                    <div class="ai-studio-container">
+                        <div class="studio-hero">
+                            <div>
+                                <h2><i class="fa-solid fa-wand-magic-sparkles"></i> AI 应用创造控制台</h2>
+                                <div id="studioNotice" class="studio-notice">先描述你要做的学习应用，AI 会引导你补全需求。</div>
+                            </div>
+                            <div class="studio-hero-actions">
+                                <button id="studioGenerateBtn" class="studio-generate-btn"><i class="fa-solid fa-rocket"></i> 生成应用并保存</button>
+                                <button id="studioGoMyAppsBtn" class="studio-ghost-btn"><i class="fa-solid fa-cubes"></i> 去我的应用</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-layout">
+                            <section class="studio-chat-panel">
+                                <div class="studio-panel-title">
+                                    <h3><i class="fa-solid fa-comments"></i> 需求访谈</h3>
+                                </div>
+                                <div id="studioChatList" class="studio-chat-list"></div>
+                                <div class="studio-input-wrap">
+                                    <textarea id="studioInput" class="studio-input" placeholder="描述你想做的学习应用，比如：我想给高一学生做一个函数闯关应用"></textarea>
+                                    <button id="studioSendBtn" class="studio-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                                </div>
+                            </section>
+
+                            <section class="studio-requirement-panel">
+                                <div class="studio-panel-title">
+                                    <h3><i class="fa-solid fa-clipboard-list"></i> 需求提炼</h3>
+                                </div>
+                                <div class="studio-form-grid">
+                                    <label>学习主题<input id="studioLearningTopic" type="text" class="studio-field" placeholder="例如：高一函数"></label>
+                                    <label>学习目标<input id="studioLearningGoal" type="text" class="studio-field" placeholder="例如：两周掌握常见题型"></label>
+                                    <label>目标人群<input id="studioTargetAudience" type="text" class="studio-field" placeholder="例如：高一学生"></label>
+                                    <label>交互风格<input id="studioInteractionStyle" type="text" class="studio-field" placeholder="例如：闯关+错题回炉"></label>
+                                </div>
+                                <div id="studioReadiness" class="studio-readiness">AI 正在等待你输入需求...</div>
+                                <div class="studio-runtime-panel">
+                                    <div id="studioThinkingState" class="studio-thinking-state">状态：待命</div>
+                                    <div id="studioLogList" class="studio-log-list"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div id="studioLoadingMask" class="studio-loading-mask" style="display: none;">
+                        <div class="studio-loader-core">
+                            <div class="studio-orbit one"></div>
+                            <div class="studio-orbit two"></div>
+                            <div class="studio-orbit three"></div>
+                            <div id="studioLoaderPhase" class="studio-loader-phase">阶段：初始化</div>
+                            <div class="studio-loader-text">AI 正在构建你的应用蓝图...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pptBlogLabView" class="ppt-blog-lab-view" style="display: none;">
+                    <div class="ppt-blog-lab-container">
+                        <div class="ppt-blog-hero">
+                            <div>
+                                <h2><i class="fa-solid fa-file-powerpoint"></i> PDF/网址转PPT语音博客</h2>
+                            </div>
+                            <div class="ppt-blog-hero-meta">
+                                <span id="pptBlogModelChip" class="ppt-blog-chip">模型：待生成</span>
+                                <span id="pptBlogTtsChip" class="ppt-blog-chip">语音：待生成</span>
+                            </div>
+                        </div>
+
+                        <div class="ppt-blog-layout">
+                            <section class="ppt-blog-config">
+                                <h3><i class="fa-solid fa-sliders"></i> 生成配置</h3>
+                                <div class="ppt-source-toggle">
+                                    <label><input type="radio" name="pptSourceType" value="url" checked> 网址</label>
+                                    <label><input type="radio" name="pptSourceType" value="pdf"> PDF</label>
+                                </div>
+                                <label class="ppt-blog-label">网址</label>
+                                <input id="pptBlogUrlInput" class="ppt-blog-input" type="text" placeholder="https://example.com/article">
+                                <label class="ppt-blog-label">PDF 文件</label>
+                                <input id="pptBlogPdfInput" class="ppt-blog-input" type="file" accept=".pdf,application/pdf">
+                                <div class="ppt-blog-inline">
+                                    <div>
+                                        <label class="ppt-blog-label">模型策略</label>
+                                        <select id="pptBlogModelSelect" class="ppt-blog-select">
+                                            <option value="auto">自动高质量</option>
+                                            <option value="glm-4.7">优先 GLM-4.7</option>
+                                            <option value="glm-5">优先 GLM-5</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="ppt-blog-label">页数策略</label>
+                                        <input class="ppt-blog-input" type="text" value="AI自动分页（按内容复杂度）" disabled>
+                                    </div>
+                                </div>
+                                <label class="ppt-blog-label">风格要求</label>
+                                <textarea id="pptBlogStyleInput" class="ppt-blog-textarea" placeholder="例如：偏课堂讲解、逻辑清晰、每页要有案例"></textarea>
+                                <button id="pptBlogGenerateBtn" class="ppt-blog-generate-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> 生成课程讲解稿</button>
+                                <button id="saveCurrentCourseInLabBtn" class="knowledge-ghost-btn"><i class="fa-solid fa-floppy-disk"></i> 保存到知识库</button>
+                                <div id="pptBlogStatus" class="ppt-blog-status">准备就绪</div>
+                            </section>
+
+                            <section class="ppt-blog-result">
+                                <div class="ppt-blog-result-head">
+                                    <h3 id="pptBlogTitle">课程单元预览</h3>
+                                    <div class="ppt-blog-result-tools">
+                                        <button id="pptFocusModeBtn" class="ppt-tool-btn" type="button"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> 专注</button>
+                                        <button id="pptCardGridBtn" class="ppt-tool-btn active" type="button"><i class="fa-solid fa-grip"></i> 卡片</button>
+                                        <button id="pptCardListBtn" class="ppt-tool-btn" type="button"><i class="fa-solid fa-list"></i> 列表</button>
+                                        <label class="ppt-font-range-wrap">字号
+                                            <input id="pptFontScaleRange" type="range" min="90" max="125" step="5" value="100">
+                                        </label>
+                                        <select id="pptThemeSelect" class="ppt-tool-select">
+                                            <option value="auto">自动主题</option>
+                                            <option value="aurora">极光主题</option>
+                                            <option value="sunset">暮光主题</option>
+                                            <option value="forest">森系主题</option>
+                                            <option value="midnight">深夜主题</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="pptSlideList" class="ppt-slide-list">
+                                    <div class="chart-placeholder">生成后在此查看每页PPT与对应语音</div>
+                                </div>
+                            </section>
+
+                            <section class="ppt-blog-output">
+                                <div class="ppt-blog-output-head">
+                                    <h3><i class="fa-solid fa-blog"></i> 博客文案</h3>
+                                    <div class="ppt-blog-output-actions">
+                                        <button id="copyBlogMarkdownBtn" class="ppt-tool-btn" type="button"><i class="fa-regular fa-copy"></i> 复制</button>
+                                        <button id="downloadBlogMarkdownBtn" class="ppt-tool-btn" type="button"><i class="fa-solid fa-download"></i> 下载</button>
+                                    </div>
+                                </div>
+                                <div id="pptBlogMarkdown" class="ppt-blog-markdown">生成后在此展示博客正文。</div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="myAppsView" class="my-apps-view" style="display: none;">
+                    <div class="my-apps-container">
+                        <div class="my-apps-hero">
+                            <h2><i class="fa-solid fa-cubes"></i> 我的 AI 应用空间</h2>
+                            <button id="refreshMyAppsBtn" class="studio-ghost-btn"><i class="fa-solid fa-rotate"></i> 刷新</button>
+                        </div>
+                        <div id="myAppsGrid" class="my-apps-grid"></div>
+                    </div>
+                </div>
+
+                <div id="appPlayerView" class="app-player-view" style="display: none;">
+                    <div class="app-player-container">
+                        <div class="app-player-hero">
+                            <div>
+                                <h2 id="appPlayerTitle"><i class="fa-solid fa-rocket"></i> 应用运行页</h2>
+                            </div>
+                            <button id="appPlayerBackBtn" class="studio-ghost-btn"><i class="fa-solid fa-arrow-left"></i> 返回我的应用</button>
+                        </div>
+                        <div id="appPlayerContent" class="app-player-content"></div>
+                    </div>
+                </div>
+
+                <div id="userCenterView" class="user-center-view" style="display: none;">
+                    <div class="user-center-container">
+                        <div class="user-center-hero">
+                            <div>
+                                <h2><i class="fa-solid fa-user-shield"></i> 用户系统中心</h2>
+                            </div>
+                            <div class="user-role-chip" id="userRoleChip">未登录</div>
+                        </div>
+
+                        <div class="user-auth-grid">
+                            <section class="auth-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <h3><i class="fa-solid fa-right-to-bracket"></i> 登录</h3>
+                                <input id="loginEmailInput" class="user-input" type="email" placeholder="邮箱地址">
+                                <input id="loginPasswordInput" class="user-input" type="password" placeholder="密码">
+                                <button id="loginBtn" class="user-primary-btn">登录</button>
+                            </section>
+                            <section class="auth-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <h3><i class="fa-solid fa-user-plus"></i> 注册</h3>
+                                <input id="registerNameInput" class="user-input" type="text" placeholder="昵称">
+                                <input id="registerEmailInput" class="user-input" type="email" placeholder="邮箱地址">
+                                <input id="registerPasswordInput" class="user-input" type="password" placeholder="至少8位密码">
+                                <button id="registerBtn" class="user-secondary-btn">注册账号</button>
+                            </section>
+                            <section class="auth-card auth-status-card">
+                                <h3><i class="fa-solid fa-circle-user"></i> 当前会话</h3>
+                                <div id="authStatusPanel" class="auth-status-panel">未登录</div>
+                                <button id="refreshMeBtn" class="user-ghost-btn">刷新状态</button>
+                                <button id="logoutBtn" class="user-ghost-btn danger">退出登录</button>
+                            </section>
+                        </div>
+
+                        <div class="user-insight-grid">
+                            <section class="user-module-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <div class="user-module-head">
+                                    <h3><i class="fa-solid fa-chart-line"></i> 学习数据快照</h3>
+                                    <button id="reloadLearningSnapshotBtn" class="user-ghost-btn">刷新</button>
+                                </div>
+                                <div class="user-kpi-grid">
+                                    <div class="user-kpi-item">
+                                        <span>总学习时长</span>
+                                        <strong id="learningHoursValue">--</strong>
+                                    </div>
+                                    <div class="user-kpi-item">
+                                        <span>连续打卡</span>
+                                        <strong id="learningStreakValue">--</strong>
+                                    </div>
+                                    <div class="user-kpi-item">
+                                        <span>完成课程</span>
+                                        <strong id="learningCompletedValue">--</strong>
+                                    </div>
+                                </div>
+                                <div id="learningSubjectSummary" class="user-meta">科目分布加载中...</div>
+                            </section>
+
+                            <section class="user-module-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <div class="user-module-head">
+                                    <h3><i class="fa-solid fa-sliders"></i> 快速设置</h3>
+                                </div>
+                                <label class="user-toggle-line">
+                                    <input id="quickSettingEmailDigest" type="checkbox">
+                                    <span>邮件周报</span>
+                                </label>
+                                <label class="user-toggle-line">
+                                    <input id="quickSettingNewCourse" type="checkbox">
+                                    <span>新课提醒</span>
+                                </label>
+                                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(148, 163, 184, 0.35);">
+                                    <label style="display:block; font-size:0.9rem; font-weight:600; margin-bottom:0.5rem; color:var(--text-primary);">
+                                        智谱 API Key
+                                    </label>
+                                    <input id="zhipuApiKeyInput" class="user-input" type="password" placeholder="项目可先运行，后续在这里补填 API Key">
+                                    <div id="zhipuApiKeyHint" class="user-meta" style="margin-top:0.5rem;">尚未检测到已保存的 API Key</div>
+                                </div>
+                                <button id="saveQuickSettingsBtn" class="user-secondary-btn">保存设置</button>
+                                <div id="quickSettingsStatus" class="user-meta"></div>
+                            </section>
+                        </div>
+
+                        <div class="user-dashboard-grid">
+                            <section class="user-module-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <div class="user-module-head">
+                                    <h3><i class="fa-solid fa-vault"></i> 个人资产</h3>
+                                    <button id="reloadAssetsBtn" class="user-ghost-btn">刷新</button>
+                                </div>
+                                <div class="user-inline-form">
+                                    <input id="assetNameInput" class="user-input" type="text" placeholder="资产名称">
+                                    <input id="assetValueInput" class="user-input" type="number" placeholder="资产值">
+                                    <button id="addAssetBtn" class="user-primary-btn">新增</button>
+                                </div>
+                                <div id="assetsList" class="user-list"></div>
+                            </section>
+
+                            <section class="user-module-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <div class="user-module-head">
+                                    <h3><i class="fa-solid fa-cubes-stacked"></i> 个人应用</h3>
+                                    <button id="reloadAppsBtn" class="user-ghost-btn">刷新</button>
+                                </div>
+                                <div class="user-inline-form">
+                                    <input id="devAppTitleInput" class="user-input" type="text" placeholder="应用名称">
+                                    <input id="devAppDescInput" class="user-input" type="text" placeholder="应用描述">
+                                    <button id="createDevAppBtn" class="user-primary-btn">创建草稿</button>
+                                </div>
+                                <div id="devAppsList" class="user-list"></div>
+                            </section>
+
+                            <section class="user-module-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                                <div class="user-module-head">
+                                    <h3><i class="fa-solid fa-people-group"></i> 社交主页</h3>
+                                </div>
+                                <textarea id="socialBioInput" class="user-textarea" placeholder="个人简介"></textarea>
+                                <textarea id="socialSkillsInput" class="user-textarea" placeholder="技能标签，用 | 分隔"></textarea>
+                                <label class="user-toggle-line">
+                                    <input id="allowCollabInput" type="checkbox" checked>
+                                    <span>允许协作邀请</span>
+                                </label>
+                                <button id="saveSocialProfileBtn" class="user-secondary-btn">保存社交主页</button>
+                                <div id="socialProfileInfo" class="user-meta"></div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="learningQuestView" class="learning-quest-view" style="display: none;">
+                    <div class="learning-quest-container">
+                        <div class="quest-hero-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                            <div class="quest-hero-title">
+                                <h2><i class="fa-solid fa-route"></i> AI 学习闯关工坊</h2>
+                            </div>
+                            <div class="quest-hero-metrics">
+                                <span class="quest-chip" id="questProgressChip"><i class="fa-solid fa-flag-checkered"></i> 进度 0%</span>
+                                <span class="quest-chip" id="questCountChip"><i class="fa-solid fa-list-check"></i> 任务 0/0</span>
+                            </div>
+                        </div>
+
+                        <div class="quest-layout">
+                            <section class="quest-config-panel">
+                                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> 闯关配置</h3>
+                                <label class="quest-field-label">学习目标</label>
+                                <input id="questGoalInput" class="quest-text-input" type="text" placeholder="例如：10天掌握 Transformer 并能讲给同学听">
+                                <div class="quest-inline-fields">
+                                    <div>
+                                        <label class="quest-field-label">天数</label>
+                                        <input id="questDaysInput" class="quest-text-input" type="number" min="3" max="30" value="10">
+                                    </div>
+                                    <div>
+                                        <label class="quest-field-label">风格</label>
+                                        <select id="questStyleSelect" class="quest-select"></select>
+                                    </div>
+                                </div>
+                                <button id="generateQuestPlanBtn" class="quest-primary-btn"><i class="fa-solid fa-bolt"></i> 生成闯关计划</button>
+                                <div class="quest-bootstrap" id="questBootstrapMeta"></div>
+                                <div class="quest-strategy-panel">
+                                    <h4><i class="fa-solid fa-lightbulb"></i> AI 策略总纲</h4>
+                                    <div id="questStrategyContent" class="quest-rich-content">请先生成闯关计划。</div>
+                                </div>
+                            </section>
+
+                            <section class="quest-missions-panel">
+                                <div class="quest-panel-head">
+                                    <h3><i class="fa-solid fa-mountain-sun"></i> 闯关任务地图</h3>
+                                    <button id="generateQuestReviewBtn" class="quest-secondary-btn"><i class="fa-solid fa-file-lines"></i> 生成今日复盘</button>
+                                </div>
+                                <div id="questMissionList" class="quest-mission-list">
+                                    <div class="chart-placeholder">生成计划后查看任务地图</div>
+                                </div>
+                                <div class="quest-review-box">
+                                    <h4><i class="fa-solid fa-clipboard-check"></i> 今日复盘</h4>
+                                    <textarea id="questNotesInput" class="quest-textarea" placeholder="记录你今天的收获与证据"></textarea>
+                                    <textarea id="questBlockersInput" class="quest-textarea" placeholder="记录你卡住的问题，AI会给你解法"></textarea>
+                                    <div id="questReviewContent" class="quest-rich-content">完成任务后点击“生成今日复盘”。</div>
+                                </div>
+                            </section>
+
+                            <section class="quest-coach-panel">
+                                <h3><i class="fa-solid fa-chalkboard-user"></i> AI 教练助攻</h3>
+                                <div id="questCoachOutput" class="quest-rich-content">可在这里提问当前任务卡点，获取即时拆解建议。</div>
+                                <textarea id="questCoachInput" class="quest-textarea coach-input" placeholder="例如：我在反向传播推导时卡住了，如何 20 分钟搞定核心逻辑？"></textarea>
+                                <button id="askQuestCoachBtn" class="quest-primary-btn"><i class="fa-solid fa-paper-plane"></i> 询问 AI 教练</button>
+                                <div class="quest-resource-box">
+                                    <h4><i class="fa-solid fa-compass-drafting"></i> 推荐资源方向</h4>
+                                    <div id="questResourcePool" class="quest-resource-list"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="memoryLabView" class="memory-lab-view" style="display: none;">
+                    <div class="memory-lab-container">
+                        <div class="memory-lab-hero">
+                            <div>
+                                <h2><i class="fa-solid fa-brain-circuit"></i> AI 反遗忘作战舱</h2>
+                            </div>
+                            <div class="memory-lab-chips">
+                                <span class="memory-chip" id="memoryProgressChip"><i class="fa-solid fa-gauge-high"></i> 进度 0%</span>
+                                <span class="memory-chip" id="memoryWeakChip"><i class="fa-solid fa-triangle-exclamation"></i> 薄弱 0</span>
+                            </div>
+                        </div>
+
+                        <div class="memory-lab-layout">
+                            <section class="memory-setup-panel">
+                                <h3><i class="fa-solid fa-sliders"></i> 训练配置</h3>
+                                <label class="memory-label">复习主题</label>
+                                <input id="memoryTopicInput" class="memory-input" type="text" placeholder="例如：Transformer 注意力机制">
+                                <div class="memory-row">
+                                    <div>
+                                        <label class="memory-label">模式</label>
+                                        <select id="memoryModeSelect" class="memory-select"></select>
+                                    </div>
+                                    <div>
+                                        <label class="memory-label">难度</label>
+                                        <select id="memoryDifficultySelect" class="memory-select"></select>
+                                    </div>
+                                </div>
+                                <label class="memory-label">卡片数量</label>
+                                <input id="memoryCountInput" class="memory-input" type="number" min="5" max="18" value="8">
+                                <button id="generateMemoryDeckBtn" class="memory-primary-btn"><i class="fa-solid fa-layer-group"></i> 生成记忆卡组</button>
+                                <div id="memoryBootstrapMeta" class="memory-meta"></div>
+                                <div class="memory-strategy">
+                                    <h4><i class="fa-solid fa-lightbulb"></i> AI 复习策略</h4>
+                                    <div id="memoryStrategyContent" class="memory-rich-content">先生成卡组后查看复习策略。</div>
+                                </div>
+                            </section>
+
+                            <section class="memory-drill-panel">
+                                <div class="memory-panel-head">
+                                    <h3><i class="fa-solid fa-clone"></i> 记忆卡片训练</h3>
+                                    <button id="buildMemorySummaryBtn" class="memory-secondary-btn"><i class="fa-solid fa-file-waveform"></i> 生成训练报告</button>
+                                </div>
+                                <div id="memoryCardBoard" class="memory-card-board">
+                                    <div class="chart-placeholder">生成卡组后开始训练</div>
+                                </div>
+                                <div class="memory-answer-box">
+                                    <label class="memory-label">我的回忆答案</label>
+                                    <textarea id="memoryAnswerInput" class="memory-textarea" placeholder="把你记得的内容写下来，AI 会帮你做纠偏。"></textarea>
+                                    <div class="memory-rate-actions">
+                                        <button class="memory-rate-btn forget" data-level="忘记">忘记</button>
+                                        <button class="memory-rate-btn blur" data-level="模糊">模糊</button>
+                                        <button class="memory-rate-btn keep" data-level="记住">记住</button>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="memory-coach-panel">
+                                <h3><i class="fa-solid fa-user-graduate"></i> AI 纠偏教练</h3>
+                                <div id="memoryCoachContent" class="memory-rich-content">完成一张卡片评分后，系统会给出纠偏建议与下次复习时间。</div>
+                                <div class="memory-next-review">
+                                    <span>下次复习建议</span>
+                                    <strong id="memoryNextReview">--</strong>
+                                </div>
+                                <div class="memory-report-box">
+                                    <h4><i class="fa-solid fa-square-poll-vertical"></i> 训练报告</h4>
+                                    <div id="memoryReportContent" class="memory-rich-content">完成多张卡片后点击“生成训练报告”。</div>
+                                </div>
+                                <div class="memory-resource-box">
+                                    <h4><i class="fa-solid fa-book-open-reader"></i> 参考资源</h4>
+                                    <div id="memoryResourceList" class="memory-resource-list"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Knowledge View (New) -->
+                <div id="knowledgeView" class="knowledge-view" style="display: none;">
+                </div>
+
+                <!-- 3.1 My Notes View (New) -->
+                <div id="myNotesView" class="my-notes-view" style="display: none; padding: 2rem; height: 100%; overflow-y: auto;">
+                    <div style="max-width: 1200px; margin: 0 auto; padding-bottom: 4rem;">
+                        <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
+                            <i class="fa-solid fa-book-open" style="color: var(--primary);"></i> 我的笔记
+                        </h2>
+                        <div id="myNotesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                            <!-- Notes will be injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3.5 Social View (New) -->
+                <div id="socialView" class="social-view" style="display: none;">
+                    <div class="social-container">
+                        <div class="social-layout">
+                            <!-- Main Feed -->
+                            <div class="social-feed-column">
+                                <div class="create-post-card">
+                                    <img src="https://ui-avatars.com/api/?name=Learner&background=0D8ABC&color=fff" class="avatar-md">
+                                    <div class="input-fake">
+                                        <span>分享你的学习心得...</span>
+                                    </div>
+                                    <button class="post-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                                </div>
+                                
+                                <div id="socialFeed" class="social-feed">
+                                    <!-- Posts loaded via JS -->
+                                    <div class="loading-state">
+                                        <div class="loader"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Sidebar -->
+                            <aside class="social-sidebar">
+                                <div class="sidebar-card">
+                                    <h3><i class="fa-solid fa-fire"></i> 热门话题</h3>
+                                    <ul class="topic-list" id="topicList">
+                                        <!-- Topics via JS -->
+                                    </ul>
+                                </div>
+
+                                <div class="sidebar-card">
+                                    <h3><i class="fa-solid fa-trophy"></i> 学习榜样</h3>
+                                    <div class="active-users-list" id="activeUsersList">
+                                        <!-- Users via JS -->
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Analysis View -->
+                <div id="analysisView" class="analysis-view" style="display: none;">
+                    <div class="analysis-container">
+                        <div class="stats-overview">
+                            <div class="stat-card">
+                                <div class="stat-icon icon-blue"><i class="fa-solid fa-clock"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-label">总学习时长</span>
+                                    <h3 class="stat-value" id="statTotalHours">--</h3>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon icon-orange"><i class="fa-solid fa-fire"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-label">连续打卡</span>
+                                    <h3 class="stat-value" id="statStreak">--</h3>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon icon-green"><i class="fa-solid fa-check-circle"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-label">完成课程</span>
+                                    <h3 class="stat-value" id="statCompleted">--</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="charts-row">
+                            <div class="chart-card">
+                                <h3><i class="fa-solid fa-chart-column"></i> 每周学习活动</h3>
+                                <div class="chart-container" id="weeklyChart">
+                                    <!-- Bars will be inserted by JS -->
+                                    <div class="chart-placeholder">Loading...</div>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3><i class="fa-solid fa-chart-pie"></i> 学习科目分布</h3>
+                                <div class="chart-container" id="subjectChart">
+                                    <!-- Donut chart logic by JS -->
+                                    <div class="chart-placeholder">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Settings View -->
+                <div id="settingsView" class="settings-view" style="display: none;">
+                    <div class="settings-container">
+                        <div class="settings-section">
+                            <h3><i class="fa-regular fa-bell"></i> 通知设置</h3>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>邮件周报</span>
+                                    <small>每周发送学习进度总结</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingEmailDigest">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>新课提醒</span>
+                                    <small>关注领域有新内容时通知</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="settingNewCourse">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3><i class="fa-solid fa-palette"></i> 外观设置</h3>
+                            <div class="setting-item">
+                                <span>主题模式</span>
+                                <div class="theme-selector">
+                                    <button class="theme-btn active" data-theme="light"><i class="fa-regular fa-sun"></i> 浅色</button>
+                                    <button class="theme-btn" data-theme="dark"><i class="fa-regular fa-moon"></i> 深色</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3><i class="fa-regular fa-user"></i> 账户信息</h3>
+                            <div class="account-info-card">
+                                <img src="https://ui-avatars.com/api/?name=Learner&background=0D8ABC&color=fff" class="avatar-lg">
+                                <div class="account-details">
+                                    <h4>Learner</h4>
+                                    <p>user@example.com</p>
+                                    <span class="plan-badge">Free Plan</span>
+                                </div>
+                                <button class="edit-profile-btn">编辑资料</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Note Detail Modal -->
+    <div id="noteDetailModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); z-index: 9999; flex-direction: column;">
+        <div style="background: var(--surface); width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); z-index: 10;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button onclick="document.getElementById('noteDetailModal').style.display='none'" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-color); transition: color 0.2s;"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 id="noteDetailTitle" style="margin: 0; color: var(--text-color); font-size: 1.25rem; font-weight: 600;">笔记详情</h3>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="deleteNoteBtn" class="danger-btn" style="background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s;"><i class="fa-solid fa-trash-can"></i> 删除笔记</button>
+                </div>
+            </div>
+            <div id="noteDetailContent" style="padding: 0; overflow: auto; flex: 1; position: relative; display: flex; flex-direction: column; background: var(--bg-color);">
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="{{ url_for('static', filename='js/super_search.js') }}"></script>
+
+    <!-- Mathematical Background Script -->
+    <script>
+        const canvas = document.getElementById('mathBgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, points = [];
+        const spacing = 60;
+        let mouse = { x: -1000, y: -1000 };
+
+        function init() {
+            resize();
+            points = [];
+            for (let x = 0; x < width + spacing; x += spacing) {
+                for (let y = 0; y < height + spacing; y += spacing) {
+                    points.push({
+                        baseX: x,
+                        baseY: y,
+                        x: x,
+                        y: y,
+                        vx: 0,
+                        vy: 0,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', () => {
+            resize();
+            init();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function animate(time) {
+            ctx.clearRect(0, 0, width, height);
+            const t = time * 0.001;
+
+            points.forEach(p => {
+                // Mathematical movement based on time and position
+                const distMouse = Math.hypot(mouse.x - p.x, mouse.y - p.y);
+                const angle = Math.atan2(mouse.y - p.y, mouse.x - p.x);
+                
+                // Breathing effect
+                const breathing = Math.sin(t + p.phase) * 5;
+                
+                // Mouse interaction (repel)
+                let force = 0;
+                if (distMouse < 200) {
+                    force = (200 - distMouse) * 0.05;
+                }
+
+                p.x = p.baseX + breathing + Math.cos(angle + Math.PI) * force;
+                p.y = p.baseY + breathing + Math.sin(angle + Math.PI) * force;
+            });
+
+            // Draw connections
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.08)'; // Indigo tint
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                // Only connect to some neighbors to keep it clean and mathematical
+                for (let j = i + 1; j < points.length; j++) {
+                    const p2 = points[j];
+                    const d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (d < spacing * 1.5) {
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                }
+            }
+            ctx.stroke();
+
+            // Draw nodes
+            ctx.fillStyle = 'rgba(99, 102, 241, 0.15)';
+            points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        requestAnimationFrame(animate);
+
+        // Page Transition Logic
+        function transitionToWorkspace() {
+            const overlay = document.getElementById('pageTransitionOverlay');
+            overlay.classList.add('active');
+            
+            // Wait for animation then redirect
+            setTimeout(() => {
+                window.location.href = '/mindmapnode';
+            }, 600); // slightly faster transition
+        }
+    </script>
+</body>
+</html>
